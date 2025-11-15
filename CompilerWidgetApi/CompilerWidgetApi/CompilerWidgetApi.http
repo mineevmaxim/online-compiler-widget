@@ -1,0 +1,6 @@
+@CompilerWidgetApi_HostAddress = http://localhost:5240
+
+GET {{CompilerWidgetApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
