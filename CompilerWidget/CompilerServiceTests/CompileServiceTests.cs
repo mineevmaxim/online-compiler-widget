@@ -1,10 +1,10 @@
 ﻿using CompilerService.Models;
 using CompilerService.Services;
+using FluentAssertions;
 
 namespace CompilerServiceTests;
 
 [TestFixture]
-[Category("RequiresBackendIsRunning")]
 public class CompileServiceTests
 {
 	private CSharpCompilerService compilerService = null!;
@@ -94,5 +94,117 @@ public class CompileServiceTests
 		                     }
 		                     """;
 		Console.WriteLine("Test 3: " + SimpleCompiler.CompileCode(test3));
+	}
+
+	[Test]
+	public void ValidHelloWorld_ReturnsOutput()
+	{
+		var request = new ProjectRequest
+		{
+			Files = new Dictionary<string, string>
+			{
+				["Program.cs"] = """
+
+				                 using System;
+				                 class Program 
+				                 {
+				                     public static void Main() 
+				                     {
+				                         Console.WriteLine("Hello from sandbox!");
+				                     }
+				                 }
+				                 """
+			}
+		};
+
+		var result = compilerService.CompileAndRun(request, timeoutMs: 5000);
+
+		result.Success.Should().BeTrue();
+		result.Output.Should().Contain("Hello from sandbox!");
+		result.Errors.Should().BeEmpty();
+	}
+
+	[Test]
+	public void SyntaxError_ReturnsCompilationError()
+	{
+		var request = new ProjectRequest
+		{
+			Files = new Dictionary<string, string>
+			{
+				["Program.cs"] = """
+
+				                 class Program 
+				                 {
+				                     static void Main() 
+				                     {
+				                         Console.WriteLine("Missing semicolon"
+				                     }
+				                 }
+				                 """
+			}
+		};
+
+		var result = compilerService.CompileAndRun(request);
+
+		result.Success.Should().BeFalse();
+		result.Errors.Should().NotBeEmpty();
+		result.Errors.First().ErrorCode.Should().Contain("CS1002");
+	}
+
+	[Test]
+	public void InfiniteLoop_TimesOut()
+	{
+		var request = new ProjectRequest
+		{
+			Files = new Dictionary<string, string>
+			{
+				["Program.cs"] = """
+
+				                 using System;
+				                 class Program 
+				                 {
+				                     static void Main() 
+				                     {
+				                         while (true) { }
+				                     }
+				                 }
+				                 """
+			}
+		};
+
+		var result = compilerService.CompileAndRun(request, timeoutMs: 1000);
+
+		result.Success.Should().BeFalse();
+		result.Errors.Should().NotBeEmpty();
+		result.Errors.First().Message.Should().Contain("таймаут");
+	}
+
+	[Test]
+	public void RuntimeException_ReturnsRuntimeError()
+	{
+		var request = new ProjectRequest
+		{
+			Files = new Dictionary<string, string>
+			{
+				["Program.cs"] = """
+
+				                 using System;
+				                 class Program 
+				                 {
+				                     static void Main() 
+				                     {
+				                         throw new Exception("Test exception");
+				                     }
+				                 }
+				                 """
+			}
+		};
+
+		var result = compilerService.CompileAndRun(request);
+		
+		result.Success.Should().BeFalse();
+		result.Errors.Should().NotBeEmpty();
+		result.Errors.First().ErrorCode.Should().BeEquivalentTo("RuntimeError");
+		result.Errors.First().Message.Should().Contain("Test exception");
 	}
 }
