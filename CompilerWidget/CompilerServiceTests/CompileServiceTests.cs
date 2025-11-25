@@ -7,7 +7,7 @@ namespace CompilerServiceTests;
 [Category("RequiresBackendIsRunning")]
 public class CompileServiceTests
 {
-	private CSharpCompilerService compilerService;
+	private CSharpCompilerService compilerService = null!;
 
 	[SetUp]
 	public void Setup()
@@ -16,21 +16,22 @@ public class CompileServiceTests
 	}
 
 	[Test]
-	public void Test1()
+	public void WithErrors()
 	{
 		var project = new ProjectRequest
 		{
 			Files = new Dictionary<string, string>
 			{
-				["Program.cs"] = @"
-public class Program
-{
-    public static void Main()
-    {
-        System.Console.WriteLine(""Hello, Online Compiler!"");
-        System.Console.WriteLine(""Test successful!"");
-    }
-}"
+				["Program.cs"] = """
+				                 public class Program
+				                 {
+				                     public static void Main()
+				                     {
+				                         System.Console.WriteLine("Hello, Online Compiler!");
+				                         System.Console.WriteLine("Test successful!");
+				                     }
+				                 }
+				                 """
 			}
 		};
 
@@ -40,7 +41,7 @@ public class Program
 		Console.WriteLine("=== COMPILATION RESULT ===");
 		Console.WriteLine($"Success: {result.Success}");
 
-		if (result.Output.Any())
+		if (result.Output.Length != 0)
 		{
 			Console.WriteLine("Output:");
 			foreach (var line in result.Output)
@@ -53,34 +54,45 @@ public class Program
 			foreach (var error in result.Errors)
 				Console.WriteLine($"  [{error.ErrorCode}] Line {error.StartLine}: {error.Message}");
 		}
+	}
 
-// ТЕСТИРУЕМ SimpleCompiler
-		Console.WriteLine("\nTesting SimpleCompiler...");
-		var simpleCompiler = new SimpleCompiler();
+	[Test]
+	public void SimpleCase()
+	{
+		const string test1 = """
 
-// Тест 1: Самый простой код вообще
-		var test1 = @"
-public class A { 
-    public static void Main() { } 
-}";
+		                     public class A { 
+		                         public static void Main() { } 
+		                     }
+		                     """;
 		Console.WriteLine("Test 1: " + SimpleCompiler.CompileCode(test1));
+	}
 
-// Тест 2: Простой класс без Console
-		var test2 = @"
-public class B { 
-    private object obj = new object();
-    public void Test() { }
-}";
+	[Test]
+	public void WithMethods()
+	{
+		const string test2 = """
+
+		                     public class B { 
+		                         private object obj = new object();
+		                         public void Test() { }
+		                     }
+		                     """;
 		Console.WriteLine("Test 2: " + SimpleCompiler.CompileCode(test2));
+	}
 
-// Тест 3: Код без System.Console
-		var test3 = @"
-using System;
-public class C { 
-    public static void Main() { 
-        // Пустой Main
-    } 
-}";
+	[Test]
+	public void WithEntryPoint()
+	{
+		const string test3 = """
+
+		                     using System;
+		                     public class C { 
+		                         public static void Main() { 
+		                             // Пустой Main
+		                         } 
+		                     }
+		                     """;
 		Console.WriteLine("Test 3: " + SimpleCompiler.CompileCode(test3));
 	}
 }
