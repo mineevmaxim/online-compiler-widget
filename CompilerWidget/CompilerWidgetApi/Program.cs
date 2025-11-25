@@ -1,41 +1,83 @@
+using CompilerService.Models;
+using CompilerService.Services;
+
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.MapOpenApi();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+// ТЕСТИРУЕМ CSharpCompilerService
+var compiler = new CSharpCompilerService();
+
+var project = new ProjectRequest
 {
-	"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    Files = new Dictionary<string, string>
+    {
+        ["Program.cs"] = @"
+public class Program
+{
+    public static void Main()
+    {
+        System.Console.WriteLine(""Hello, Online Compiler!"");
+        System.Console.WriteLine(""Test successful!"");
+    }
+}"
+    }
 };
 
-app.MapGet("/weatherforecast", () =>
-	{
-		var forecast = Enumerable.Range(1, 5).Select(index =>
-				new WeatherForecast
-				(
-					DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-					Random.Shared.Next(-20, 55),
-					summaries[Random.Shared.Next(summaries.Length)]
-				))
-			.ToArray();
-		return forecast;
-	})
-	.WithName("GetWeatherForecast");
+Console.WriteLine("Testing CSharpCompilerService...");
+var result = compiler.CompileAndRun(project);
+
+Console.WriteLine("=== COMPILATION RESULT ===");
+Console.WriteLine($"Success: {result.Success}");
+
+if (result.Output.Any())
+{
+    Console.WriteLine("Output:");
+    foreach (var line in result.Output)
+        Console.WriteLine($"  {line}");
+}
+
+if (!result.Success && result.Errors.Any())
+{
+    Console.WriteLine("Errors:");
+    foreach (var error in result.Errors)
+        Console.WriteLine($"  [{error.ErrorCode}] Line {error.StartLine}: {error.Message}");
+}
+
+// ТЕСТИРУЕМ SimpleCompiler
+Console.WriteLine("\nTesting SimpleCompiler...");
+var simpleCompiler = new SimpleCompiler();
+
+// Тест 1: Самый простой код вообще
+var test1 = @"
+public class A { 
+    public static void Main() { } 
+}";
+Console.WriteLine("Test 1: " + simpleCompiler.CompileCode(test1));
+
+// Тест 2: Простой класс без Console
+var test2 = @"
+public class B { 
+    private object obj = new object();
+    public void Test() { }
+}";
+Console.WriteLine("Test 2: " + simpleCompiler.CompileCode(test2));
+
+// Тест 3: Код без System.Console
+var test3 = @"
+using System;
+public class C { 
+    public static void Main() { 
+        // Пустой Main
+    } 
+}";
+Console.WriteLine("Test 3: " + simpleCompiler.CompileCode(test3));
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-	public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
