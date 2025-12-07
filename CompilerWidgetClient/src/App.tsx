@@ -1,35 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.tsx
+import React, { useState } from "react";
+import {
+    ReactFlow,
+    Controls,
+    Background,
+    BackgroundVariant,
+    applyNodeChanges,
+    applyEdgeChanges,
+} from "@xyflow/react";
+import type { Node, Edge } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import CompilerWidget from "./components/CompilerWidget";
 
-function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+const nodeTypes = {
+    compiler: CompilerWidget
+};
+
+
+const initialNodes: Node[] = [
+    {
+        id: "1",
+        type: "compiler",
+        position: { x: 100, y: 100 },
+        dragHandle: '.drag-handle__custom',
+        data: {
+            initialFiles: {
+                "Program.cs":
+                    'using System;\n\nclass Program\n{\n    static void Main()\n    {\n        Console.WriteLine("Hello from C#!");\n    }\n}',
+                "Utils.cs":
+                    'public static class Utils\n{\n    public static string GetMessage() => "From Utils";\n}'
+            },
+            language: "csharp"
+        },
+        style: {
+            width: 700,
+
+        }
+    }
+];
+
+const initialEdges: Edge[] = [];
+
+export default function App() {
+    const [nodes, setNodes] = useState<Node[]>(initialNodes);
+    const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
+    return (
+        <div style={{ width: "100vw", height: "100vh" }}>
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                nodeTypes={nodeTypes}
+                onNodesChange={(changes) =>
+                    setNodes((nds) => applyNodeChanges(changes, nds))
+                }
+                onEdgesChange={(changes) =>
+                    setEdges((eds) => applyEdgeChanges(changes, eds))
+                }
+                fitView
+                minZoom={0.2}
+                maxZoom={4}
+            >
+                <Background variant={BackgroundVariant.Dots} />
+                <Controls />
+            </ReactFlow>
+        </div>
+    );
 }
-
-export default App

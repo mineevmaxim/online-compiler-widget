@@ -19,7 +19,6 @@ public class CSharpCompilerService
     {
         var references = new List<MetadataReference>();
         
-        // Базовые системные сборки
         var assemblies = new[]
         {
             typeof(object).Assembly,
@@ -36,7 +35,6 @@ public class CSharpCompilerService
             }
             catch
             {
-                // Игнорируем ошибки
             }
         }
 
@@ -75,7 +73,6 @@ public class CSharpCompilerService
                 };
             }
             
-            // Запускаем код
             ms.Position = 0;
             return ExecuteCompiledCode(ms);
         }
@@ -105,7 +102,6 @@ public class CSharpCompilerService
             Console.SetOut(outputWriter);
             Console.SetError(errorWriter);
             
-            // Загружаем сборку в изолированном контексте
             var alc = new AssemblyLoadContext("ExecutionContext", true);
             var assembly = alc.LoadFromStream(assemblyStream);
             var entryPoint = assembly.EntryPoint;
@@ -122,7 +118,6 @@ public class CSharpCompilerService
                 };
             }
             
-            // Вызываем точку входа
             try
             {
                 object[] parameters = entryPoint.GetParameters().Length > 0 

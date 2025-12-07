@@ -1,0 +1,31 @@
+$editor-header-bg: #f9fafb;
+$editor-border: #ddd;
+
+.editorContainer {
+  flex: 1 1 auto;           // растягивается по вертикали
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  .editorHeader {
+    flex: 0 0 32px;          // высота верхней полоски с языком
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    background: $editor-header-bg;
+    border-bottom: 1px solid #eee;
+    font-weight: 500;
+    font-size: 13px;
+    color: #111;
+  }
+
+  .monaco-editor {
+    flex: 1 1 auto;
+    overflow: hidden !important; // иногда Monaco добавляет скроллы
+  }
+}
+
+.runContainer {
+
+}

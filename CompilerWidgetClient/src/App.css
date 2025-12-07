@@ -5,6 +5,11 @@
   text-align: center;
 }
 
+#app {
+  width: 100vw;
+  height: 100vh;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
