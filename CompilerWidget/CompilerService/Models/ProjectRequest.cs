@@ -2,5 +2,5 @@
 
 public class ProjectRequest
 {
-    public Dictionary<string, string> Files { get; set; } = new();
+	public Dictionary<string, string> Files { get; init; } = new();
 }

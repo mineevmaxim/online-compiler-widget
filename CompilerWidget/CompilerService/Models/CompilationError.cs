@@ -2,21 +2,19 @@
 
 namespace CompilerService.Models;
 
-public class CompilationError
+public class CompilationError()
 {
-    public string ErrorCode { get; set; }
-    public string Message { get; set; }
-    public int StartLine { get; set; }
-    public int EndLine { get; set; }
+	public string? ErrorCode { get; init; }
+	public string? Message { get; init; }
+	public int StartLine { get; }
+	public int EndLine { get; set; }
 
-    public CompilationError() { }
-
-    public CompilationError(Diagnostic diagnostic)
-    {
-        ErrorCode = diagnostic.Id;
-        Message = diagnostic.GetMessage();
-        var lineSpan = diagnostic.Location.GetLineSpan();
-        StartLine = lineSpan.StartLinePosition.Line + 1;
-        EndLine = lineSpan.EndLinePosition.Line + 1;
-    }
+	public CompilationError(Diagnostic diagnostic) : this()
+	{
+		ErrorCode = diagnostic.Id;
+		Message = diagnostic.GetMessage();
+		var lineSpan = diagnostic.Location.GetLineSpan();
+		StartLine = lineSpan.StartLinePosition.Line + 1;
+		EndLine = lineSpan.EndLinePosition.Line + 1;
+	}
 }
