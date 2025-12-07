@@ -3,6 +3,8 @@ import React, { useRef, useEffect } from "react";
 import Editor, { loader } from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 import cls from "./MonacoEditorWrapper.module.scss";
+import StartIcon from "../assets/start.svg?react";
+import StopIcon from "../assets/stop.svg?react";
 
 interface MonacoEditorWrapperProps {
     code: string;
@@ -68,7 +70,14 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
                 }}
             />
             <div className={cls.runContainer}>
-
+                <button className={cls.runButton}>
+                    <StartIcon className={cls.startIcon}/>
+                    <p className={cls.runText}>Run</p>
+                </button>
+                <button className={cls.stopButton}>
+                    <StopIcon className={cls.stopIcon}/>
+                    <p className={cls.runText}>Stop</p>
+                </button>
             </div>
         </div>
     );

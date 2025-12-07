@@ -2,14 +2,14 @@ $editor-header-bg: #f9fafb;
 $editor-border: #ddd;
 
 .editorContainer {
-  flex: 1 1 auto;           // растягивается по вертикали
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
 
   .editorHeader {
-    flex: 0 0 32px;          // высота верхней полоски с языком
+    flex: 0 0 32px;
     display: flex;
     align-items: center;
     padding: 0 12px;
@@ -22,10 +22,59 @@ $editor-border: #ddd;
 
   .monaco-editor {
     flex: 1 1 auto;
-    overflow: hidden !important; // иногда Monaco добавляет скроллы
+    overflow: hidden !important;
   }
 }
 
-.runContainer {
+button {
+  margin: 0;
+  padding: 0;
+}
 
+.runContainer {
+  display: flex;
+  flex-direction: row;
+  padding: 6px 7px;
+  border-top: 2px solid #E2E8F0;
+  background-color: #F8FAFC;
+}
+
+
+.runText {
+  font-family: Arial;
+  font-weight: 400;
+  font-size: 12px;
+  padding: 0;
+  margin: 0;
+}
+
+.runButton {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  padding: 6px 7px;
+  margin-right: 6px;
+  background-color: #74c56f;
+  align-items: center;
+  justify-content: center;
+}
+
+.stopButton {
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  padding: 6px 7px;
+  background-color: #e57575;
+}
+
+.startIcon {
+  margin-right: 3px;
+  height: 11px;
+}
+
+.stopIcon {
+  margin-right: 3px;
+  height: 13px;
 }

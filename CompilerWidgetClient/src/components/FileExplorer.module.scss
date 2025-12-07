@@ -85,6 +85,7 @@ $file-selected: #d0eaff;
 
       .fileIcon {
         font-size: 7px;
+        margin-right: 3px;
       }
 
       .close{
@@ -95,6 +96,8 @@ $file-selected: #d0eaff;
         font-size: 7px;
         font-family: sans-serif;
         color: #1C398E;
+        align-items: center;
+        padding-top: 2px;
       }
     }
   }
