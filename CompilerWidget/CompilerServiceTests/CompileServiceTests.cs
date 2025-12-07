@@ -1,5 +1,5 @@
-﻿using CompilerService.Models;
-using CompilerService.Services;
+﻿using Compilation.Models;
+using Compilation.Services;
 using FluentAssertions;
 
 namespace CompilerServiceTests;

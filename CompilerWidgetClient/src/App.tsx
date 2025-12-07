@@ -35,7 +35,7 @@ const initialNodes: Node[] = [
         },
         style: {
             width: 700,
-
+            height: 600
         }
     }
 ];

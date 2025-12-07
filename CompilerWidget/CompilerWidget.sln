@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerWidgetApi", "Compil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SessionManager", "SessionManager\SessionManager.csproj", "{278341D5-BF91-4B01-99AA-381CA22B3665}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompilerService", "CompilerService\CompilerService.csproj", "{2F237A87-80E1-4377-A12B-B02E6AE43375}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compilation", "Compilation\Compilation.csproj", "{2F237A87-80E1-4377-A12B-B02E6AE43375}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStorage", "FileStorage\FileStorage.csproj", "{52BDD3CA-7EE2-42AD-9559-C8D12B93072C}"
 EndProject
