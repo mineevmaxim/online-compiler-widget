@@ -1,29 +1,22 @@
-// src/App.tsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
     ReactFlow,
     Controls,
     Background,
     BackgroundVariant,
     applyNodeChanges,
-    applyEdgeChanges,
+    applyEdgeChanges
 } from "@xyflow/react";
-import type { Node, Edge } from "@xyflow/react";
+import type { Node, Edge, NodeTypes } from "@xyflow/react"; // <— тут правильно
 import "@xyflow/react/dist/style.css";
 import CompilerWidget from "./components/CompilerWidget";
-
-
-const nodeTypes = {
-    compiler: CompilerWidget
-};
-
 
 const initialNodes: Node[] = [
     {
         id: "1",
         type: "compiler",
         position: { x: 100, y: 100 },
-        dragHandle: '.drag-handle__custom',
+        dragHandle: ".drag-handle__custom",
         data: {
             initialFiles: {
                 "Program.cs":
@@ -45,6 +38,22 @@ const initialEdges: Edge[] = [];
 export default function App() {
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
+
+    const setNodeHeight = (id: string, height: number) => {
+        setNodes(nds =>
+            nds.map(n =>
+                n.id === id ? { ...n, style: { ...n.style, height } } : n
+            )
+        );
+    };
+
+    // типизация через NodeTypes
+    const nodeTypes: NodeTypes = useMemo(
+        () => ({
+            compiler: (props) => <CompilerWidget {...props} setNodeHeight={setNodeHeight} />
+        }),
+        []
+    );
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>

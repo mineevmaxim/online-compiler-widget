@@ -148,3 +148,22 @@
 .closeButton {
 
 }
+
+.editCont {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: height 0.3s ease; // плавная анимация при изменении высоты
+}
+
+.widget.collapsed {
+  height: 42px; // только header
+}
+

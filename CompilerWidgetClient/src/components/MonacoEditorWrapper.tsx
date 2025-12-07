@@ -69,16 +69,6 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
                     tabSize: 2,
                 }}
             />
-            <div className={cls.runContainer}>
-                <button className={cls.runButton}>
-                    <StartIcon className={cls.startIcon}/>
-                    <p className={cls.runText}>Run</p>
-                </button>
-                <button className={cls.stopButton}>
-                    <StopIcon className={cls.stopIcon}/>
-                    <p className={cls.runText}>Stop</p>
-                </button>
-            </div>
         </div>
     );
 };
