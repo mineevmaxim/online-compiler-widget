@@ -43,19 +43,24 @@ public class FileService : IFileService
 
 			var fileId = Guid.NewGuid();
 			var extension = Path.GetExtension(fileName);
+			var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+		
+			// Path должен содержать только директорию, без имени файла
+			var directoryPath = Path.GetDirectoryName(path) ?? "";
+		
 			var dbFile = new ProjectFile
 			{
 				FileId = fileId,
 				ProjectId = projectId,
-				FileName = Path.GetFileNameWithoutExtension(fileName),
+				FileName = fileNameWithoutExt, // Только имя без расширения
 				Extension = string.IsNullOrEmpty(extension) ? ProjectFileExtension.Unknown : FromExtension(extension),
-				Path = path.Trim('/'),
+				Path = directoryPath.Trim('/'), // Сохраняем только путь к директории
 			};
 
 			context.ProjectFiles.Add(dbFile);
 			context.SaveChanges();
 
-			var filePath = GetPhysicalFilePath(fileId, ToExtension(dbFile.Extension));
+			var filePath = GetPhysicalFilePath(fileId, extension);
 			var directory = Path.GetDirectoryName(filePath);
 			if (!Directory.Exists(directory))
 			{
@@ -143,41 +148,6 @@ public class FileService : IFileService
 		}
 	}
 
-	public void Move(Guid fileId, string newPath)
-	{
-		try
-		{
-			var file = context.ProjectFiles.Find(fileId);
-			if (file == null)
-			{
-				throw new FileNotFoundException($"Файл с ID {fileId} не найден");
-			}
-
-			var existingFile = context.ProjectFiles
-				.FirstOrDefault(f => f.Path == newPath.Trim('/') && f.ProjectId == file.ProjectId);
-
-			if (existingFile != null && existingFile.FileId != fileId)
-			{
-				throw new InvalidOperationException($"Файл по пути {newPath} уже существует");
-			}
-
-			var oldPath = file.Path;
-
-			file.Path = newPath.Trim('/');
-
-			context.SaveChanges();
-
-			logger.LogInformation("Файл {FileId} перемещен с {OldPath} на {NewPath}",
-				fileId, oldPath, newPath);
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Ошибка при перемещении файла {FileId} на путь {NewPath}",
-				fileId, newPath);
-			throw;
-		}
-	}
-
 	public void Remove(Guid fileId)
 	{
 		try
@@ -223,8 +193,67 @@ public class FileService : IFileService
 			? projectDir
 			: Path.Combine(projectDir, directoryPath);
 
-		var fileName = $"{fileId}{extension}";
+		// Создаем директорию если не существует
+		if (!Directory.Exists(fullDir))
+		{
+			Directory.CreateDirectory(fullDir);
+		}
+
+		// Имя файла: имя + расширение
+		var fileName = $"{file.FileName}{extension}";
 		return Path.Combine(fullDir, fileName);
+	}
+	
+	public void Move(Guid fileId, string newPath)
+	{
+		try
+		{
+			var file = context.ProjectFiles.Find(fileId);
+			if (file == null)
+			{
+				throw new FileNotFoundException($"Файл с ID {fileId} не найден");
+			}
+
+			// newPath должен быть только путем к директории
+			var newDirectoryPath = Path.GetDirectoryName(newPath) ?? "";
+			newDirectoryPath = newDirectoryPath.Trim('/');
+
+			// Проверяем конфликты в новой директории
+			var existingFile = context.ProjectFiles
+				.FirstOrDefault(f => f.Path == newDirectoryPath && 
+				                     f.FileName == file.FileName && 
+				                     f.ProjectId == file.ProjectId);
+
+			if (existingFile != null && existingFile.FileId != fileId)
+			{
+				throw new InvalidOperationException($"Файл {file.FileName} уже существует в пути {newPath}");
+			}
+
+			var oldPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(file.Extension));
+		
+			// Обновляем только путь к директории
+			file.Path = newDirectoryPath;
+
+			context.SaveChanges();
+
+			var newPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(file.Extension));
+
+			// Перемещаем физический файл
+			if (File.Exists(oldPhysicalPath) && oldPhysicalPath != newPhysicalPath)
+			{
+				File.Move(oldPhysicalPath, newPhysicalPath);
+				DeleteEmptyDirectories(Path.GetDirectoryName(oldPhysicalPath));
+			}
+
+			logger.LogInformation("Файл {FileId} перемещен в {NewPath}",
+				fileId, newPath);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при перемещении файла {FileId} на путь {NewPath}",
+				fileId, newPath);
+			throw;
+		}
 	}
 
 	private void DeleteEmptyDirectories(string directory)
@@ -332,6 +361,7 @@ public class FileService : IFileService
 			{ ProjectFileExtension.Js, ".js" },
 			{ ProjectFileExtension.Json, ".json" },
 			{ ProjectFileExtension.Txt, ".txt" },
+			{ ProjectFileExtension.CsProj, ".csproj" },
 		};
 		return dict[extension];
 	}
@@ -345,6 +375,7 @@ public class FileService : IFileService
 			{ ".js", ProjectFileExtension.Js },
 			{".json",  ProjectFileExtension.Json },
 			{ ".txt", ProjectFileExtension.Txt },
+			{ ".csproj", ProjectFileExtension.CsProj },
 		};
 		return dict[extension];
 	}

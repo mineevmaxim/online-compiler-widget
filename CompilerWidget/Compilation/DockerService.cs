@@ -44,13 +44,13 @@ public class DockerService : IDisposable
 				Name = containerName,
 				HostConfig = new HostConfig
 				{
-					Binds = [$"{Path.GetFullPath(sourcePath)}:/app:ro"],
+					Binds = [$"{Path.GetFullPath(sourcePath)}:/app"],
 					AutoRemove = true,
 					Memory = 512 * 1024 * 1024,
 					MemorySwap = 0,
 					CPUPeriod = 100000,
 					CPUQuota = 50000,
-					ReadonlyRootfs = true,
+					ReadonlyRootfs = false,
 					NetworkMode = "none"
 				},
 				Cmd = fullCommand,
