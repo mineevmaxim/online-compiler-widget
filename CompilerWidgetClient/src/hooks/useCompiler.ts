@@ -66,35 +66,84 @@ export function useCompiler(initialFiles?: Record<string, string>) {
         );
     };
 
-    const addDocument = () => {
-        let fileId = "";
+    // В useCompiler.ts обновляем функцию addDocument:
+const addDocument = (fileName?: string) => {
+    // Если передано имя файла - используем его, иначе генерируем
+    const defaultName = `file${documents.length + 1}.cs`;
+    const finalName = fileName || defaultName;
+    
+    let fileId = "";
 
-        fileApi.apiFilesProjectProjectIdPost(projectId, {
-            name: `file${documents.length + 1}.cs`,
-            path: `file${documents.length + 1}.cs`
+    fileApi.apiFilesProjectProjectIdPost(projectId, {
+        name: finalName,
+        path: finalName
+    })
+        .then(res => {
+            fileId = res.data;
+            
+            // Определяем язык по расширению
+            let language: "javascript" | "csharp" = "csharp";
+            if (finalName.endsWith('.js')) {
+                language = "javascript";
+            }
+            
+            // Начальное содержимое в зависимости от языка
+            let initialContent = "// New file";
+            if (language === "javascript") {
+                initialContent = "// JavaScript file";
+            }
+            
+            const newDoc: EditorDocument = {
+                id: fileId,
+                path: finalName,
+                name: finalName,
+                language: language,
+                content: initialContent,
+                modified: false,
+            };
+
+            setDocuments(d => [...d, newDoc]);
+            setSelectedId(newDoc.id);
+            
+            // Сохраняем начальное содержимое
+            fileApi.apiFilesFileIdSavePost(fileId, {
+                content: initialContent,
+            }).catch(err => console.error("Ошибка при сохранении:", err));
         })
-            .then(res => {
-                fileId = res.data;
-                const newDoc: EditorDocument = {
-                    id: fileId,
-                    path: `file${documents.length + 1}.cs`,
-                    name: `file${documents.length + 1}.cs`,
-                    language: "csharp",
-                    content: "// New file",
-                    modified: false,
-                };
-
-                setDocuments(d => [...d, newDoc]);
-                setSelectedId(newDoc.id);
-            })
-            .catch(err => alert(err));
-    };
-
+        .catch(err => {
+            console.error("Ошибка при создании файла:", err);
+            alert(`Ошибка при создании файла: ${err.message}`);
+        });
+};
 
     const updateDocument = (id: string, patch: Partial<EditorDocument>) => {
+        const doc = documents.find(d => d.id === id);
+        if (!doc) return;
+
+        // 1. Локальное обновление
         setDocuments(docs =>
             docs.map(doc => doc.id === id ? { ...doc, ...patch, modified: true } : doc)
         );
+
+        // 2. Если меняется имя - отправить на сервер
+        if (patch.name !== undefined && patch.name !== doc.name) {
+            fileApi.apiFilesFileIdRenamePost(id, {
+                name: patch.name
+            }).catch(err => {
+                console.error("Ошибка при переименовании:", err);
+                // Откат если ошибка
+                setDocuments(docs =>
+                    docs.map(d => d.id === id ? { ...d, name: doc.name } : d)
+                );
+            });
+        }
+
+        // 3. Если меняется контент - сохранить
+        if (true) {
+            fileApi.apiFilesFileIdSavePost(id, {
+                content: patch.content,
+            }).catch(err => console.error("Ошибка при сохранении:", err));
+        }
     };
 
 

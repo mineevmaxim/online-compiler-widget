@@ -73,6 +73,16 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, data, setNodeHeight
         }
     };
 
+    // Обработчик переименования файла
+   const handleRename = (id: string, newName: string) => {
+        const doc = documents.find(d => d.id === id);
+        if (!doc || newName === doc.name) return;
+        
+        updateDocument(id, {
+            name: newName
+        });
+    };
+
     const containerRef = useRef<HTMLDivElement | null>(null);
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
@@ -198,17 +208,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, data, setNodeHeight
                             selectedId={selectedId}
                             onSelect={setSelectedId}
                             onAdd={addDocument}
-                            onRename={(id) => {
-                                const doc = documents.find(d => d.id === id);
-                                if (!doc) return;
-                                const newName = prompt("Новое имя файла:", doc.name);
-                                if (newName) {
-                                    updateDocument(id, {
-                                        name: newName,
-                                        path: doc.path.replace(doc.name, newName)
-                                    });
-                                }
-                            }}
+                            onRename={handleRename} // Используем inline-редактирование
                             onDelete={deleteDocument}
                         />
 
