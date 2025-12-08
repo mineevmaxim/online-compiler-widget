@@ -34,9 +34,9 @@ public class FileController(IFileService fileService): Controller
 
 	[HttpPost]
 	[Route("project/{projectId:guid}")]
-	public ActionResult<Guid> CreateFile(Guid projectId, [FromBody] RenameFileDto createFileDto)
+	public ActionResult<Guid> CreateFile(Guid projectId, [FromBody] CreateFileDto createFileDto)
 	{
-		var result = fileService.Create(createFileDto.Name, projectId, createFileDto.Name);
+		var result = fileService.Create(createFileDto.Name, projectId, createFileDto.Path);
 		return Ok(result);
 	}
 

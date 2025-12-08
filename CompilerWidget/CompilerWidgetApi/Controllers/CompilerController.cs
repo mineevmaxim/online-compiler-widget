@@ -2,6 +2,7 @@
 using Compilation;
 using FileStorage;
 using System.Text.Json;
+using CompilerWidgetApi.Dto;
 
 namespace CompilerWidgetApi.Controllers;
 
