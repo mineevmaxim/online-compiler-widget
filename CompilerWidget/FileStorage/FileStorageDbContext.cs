@@ -1,48 +1,43 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FileStorage;
 
-public class FileStorageDbContext(DbContextOptions<FileStorageDbContext> options) : DbContext(options)
+public class FileStorageDbContext : DbContext
 {
-	private const string CreatePropertyName = "CreatedTimestamp";
-	private const string UpdatePropertyName = "UpdatedTimestamp";
+	public FileStorageDbContext(DbContextOptions<FileStorageDbContext> options)
+		: base(options)
+	{
+	}
 
-	DbSet<ProjectFile> ProjectFiles { get; set; }
-	DbSet<Project> Projects { get; set; }
+	public FileStorageDbContext()
+	{
+	}
+
+	public DbSet<ProjectFile> ProjectFiles { get; set; }
+	public DbSet<Project> Projects { get; set; }
+
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+	{
+		if (!optionsBuilder.IsConfigured)
+		{
+			optionsBuilder.UseNpgsql("Host=localhost;Database=compiler;Username=postgres;Password=postgres");
+			optionsBuilder.EnableSensitiveDataLogging();
+			optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
+		}
+	}
 
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.Entity<Project>()
-			.HasMany(p => p.Files);
+			.HasMany(p => p.Files)
+			.WithOne(p => p.Project)
+			.HasForeignKey(f => f.ProjectId)
+			.OnDelete(DeleteBehavior.Cascade);
 
 		builder.Entity<ProjectFile>()
 			.HasKey(m => m.FileId);
 
-		builder.Entity<Project>().Property<DateTime>(CreatePropertyName);
-		builder.Entity<ProjectFile>().Property<DateTime>(CreatePropertyName);
-
-		builder.Entity<Project>().Property<DateTime>(UpdatePropertyName);
-		builder.Entity<ProjectFile>().Property<DateTime>(UpdatePropertyName);
-
 		base.OnModelCreating(builder);
-	}
-
-	public override int SaveChanges()
-	{
-		ChangeTracker.DetectChanges();
-
-		UpdateUpdatedProperty<Project>();
-		UpdateUpdatedProperty<ProjectFile>();
-
-		return base.SaveChanges();
-	}
-
-	private void UpdateUpdatedProperty<T>() where T : class
-	{
-		var modifiedSourceInfo = ChangeTracker.Entries<T>()
-			.Where(e => e.State is EntityState.Added or EntityState.Modified);
-
-		foreach (var entry in modifiedSourceInfo)
-			entry.Property(UpdatePropertyName).CurrentValue = DateTime.UtcNow;
 	}
 }

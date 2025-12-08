@@ -1,14 +1,34 @@
 ﻿namespace FileStorage;
 
-public interface IProjectsService
+public interface IProjectService
 {
-	public void Remove(Guid fileId);
-
-	public Guid Create(string projectName, string path);
-
-	public Guid AddFile(string fileName, string path);
-
-	public Project Get(Guid projectId);
-
-	public List<ProjectFile> GetFiles(Guid projectId);
+	/// <summary>
+	/// Создает новый проект
+	/// </summary>
+	Task<Guid> CreateProjectAsync(string? name = null);
+    
+	/// <summary>
+	/// Удаляет проект со всеми файлами
+	/// </summary>
+	Task<bool> DeleteProjectAsync(Guid projectId);
+    
+	/// <summary>
+	/// Получает информацию о проекте
+	/// </summary>
+	Task<ProjectInfo?> GetProjectInfoAsync(Guid projectId);
+    
+	/// <summary>
+	/// Получает все проекты
+	/// </summary>
+	Task<List<ProjectInfo>> GetAllProjectsAsync();
+    
+	/// <summary>
+	/// Переименовывает проект
+	/// </summary>
+	Task<bool> RenameProjectAsync(Guid projectId, string newName);
+    
+	/// <summary>
+	/// Получает статистику по проекту
+	/// </summary>
+	Task<ProjectStats> GetProjectStatsAsync(Guid projectId);
 }

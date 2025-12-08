@@ -1,13 +1,13 @@
 import { useState } from "react";
 import type { EditorDocument } from "../types/EditorDocument";
-import { nanoid } from "nanoid";
+import { v4 as uuidv4 } from 'uuid';
 
 export function useCompiler(initialFiles?: Record<string, string>) {
     const [documents, setDocuments] = useState<EditorDocument[]>(() => {
         if (!initialFiles) return [];
 
         return Object.entries(initialFiles).map(([path, content]) => ({
-            id: nanoid(),
+            id: uuidv4(),
             path,
             name: path.split("/").pop() || path,
             language: path.endsWith(".cs") ? "csharp" : "javascript",
@@ -34,7 +34,7 @@ export function useCompiler(initialFiles?: Record<string, string>) {
 
     const addDocument = () => {
         const newDoc: EditorDocument = {
-            id: nanoid(),
+            id: uuidv4(),
             path: `file${documents.length + 1}.js`,
             name: `file${documents.length + 1}.js`,
             language: "javascript",
@@ -49,9 +49,7 @@ export function useCompiler(initialFiles?: Record<string, string>) {
 
     const updateDocument = (id: string, patch: Partial<EditorDocument>) => {
         setDocuments(docs =>
-            docs.map(doc =>
-                doc.id === id ? { ...doc, ...patch, modified: true } : doc
-            )
+            docs.map(doc => doc.id === id ? { ...doc, ...patch, modified: true } : doc)
         );
     };
 
@@ -73,3 +71,4 @@ export function useCompiler(initialFiles?: Record<string, string>) {
         history: [],
     };
 }
+

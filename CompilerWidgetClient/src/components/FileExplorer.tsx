@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import cls from "./FileExplorer.module.scss";
 import DocumentIcon from "../assets/documentIcon.svg?react";
 import PlusIcon from "../assets/plus.svg?react";
 import type { EditorDocument } from "../types/EditorDocument";
+import { FileApi, FileApiAxiosParamCreator } from "../api";
 
 interface FileExplorerProps {
     documents: EditorDocument[];
@@ -38,6 +39,11 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
+    const rename = useCallback((id) => {
+        setMenuId(null);
+        onRename(id);
+    }, []);
+
     return (
         <div className={cls.fileExplorer}>
             <div className={cls.header}>
@@ -55,10 +61,11 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                         className={`${cls.fileItem} ${
                             selectedId === doc.id ? cls.selected : ""
                         }`}
+                        onClick={() => onSelect(doc.id)}
                     >
                         <div
                             className={cls.clickZone}
-                            onClick={() => onSelect(doc.id)}
+                            
                         >
                             <span className={cls.fileIcon}>📄</span>
                             <span className={cls.itemText}>{doc.name}</span>
@@ -80,10 +87,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                             <div className={cls.contextMenu} ref={menuRef}>
                                 <div
                                     className={cls.menuItem}
-                                    onClick={() => {
-                                        setMenuId(null);
-                                        onRename(doc.id);
-                                    }}
+                                    onClick={() => rename(doc.id)}
                                 >
                                     Переименовать
                                 </div>

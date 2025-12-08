@@ -1,4 +1,4 @@
-﻿public class ProjectFile
+﻿public class PhysycalFile
 {
 	public string Name { get; set; }       // Relative path: "Models/User.cs"
 	public string Content { get; set; }    // File content

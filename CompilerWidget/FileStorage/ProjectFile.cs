@@ -9,5 +9,6 @@ public class ProjectFile
 	public string Path { get; set; }
 	public ProjectFileExtension Extension { get; set; }
 
-	[ForeignKey("ProjectId")] public Project Project { get; set; }
+	public Project Project { get; set; }
+	public Guid ProjectId { get; set; }
 }

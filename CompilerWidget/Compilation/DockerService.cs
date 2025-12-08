@@ -1,61 +1,130 @@
 ﻿using Compilation.Models;
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Compilation;
 
 public class DockerService : IDisposable
 {
-	private readonly DockerClient docker = new DockerClientConfiguration()
-		.CreateClient();
+	private readonly DockerClient docker;
+	private readonly ILogger<DockerService> logger;
+
+	public DockerService(ILogger<DockerService> logger)
+	{
+		docker = new DockerClientConfiguration()
+			.CreateClient();
+		this.logger = logger;
+	}
 
 	public async Task<CompilationResult> RunCompilerContainer(string sourcePath, string mainFile)
 	{
+		return await ExecuteInContainer(sourcePath, mainFile, ["dotnet", "run", "--project"]);
+	}
+
+	public async Task<CompilationResult> CompileOnly(string sourcePath, string mainFile)
+	{
+		return await ExecuteInContainer(sourcePath, mainFile, ["dotnet", "build", "--verbosity", "quiet"]);
+	}
+
+	private async Task<CompilationResult> ExecuteInContainer(string sourcePath, string mainFile, string[] command)
+	{
 		var containerName = $"compile_{Guid.NewGuid()}";
 
-		var container = await docker.Containers.CreateContainerAsync(new CreateContainerParameters
+		var fullCommand = command.ToList();
+		fullCommand.Add($"/app/{mainFile}");
+
+		try
 		{
-			Image = "mcr.microsoft.com/dotnet/sdk:8.0",
-			Name = containerName,
-			HostConfig = new HostConfig
+			logger.LogInformation("Создание контейнера {ContainerName} для компиляции", containerName);
+
+			var container = await docker.Containers.CreateContainerAsync(new CreateContainerParameters
 			{
-				Binds = [$"{sourcePath}:/app:ro"],
-				AutoRemove = true,
-				Memory = 512 * 1024 * 1024,
-				MemorySwap = 0,
-				CPUPeriod = 100000,
-				CPUQuota = 50000,
-				ReadonlyRootfs = true,
-				NetworkMode = "none"
-			},
-			Cmd = ["dotnet", "run", "--project", $"/app/{mainFile}"],
-			AttachStdout = true,
-			AttachStderr = true
-		});
+				Image = "mcr.microsoft.com/dotnet/sdk:8.0",
+				Name = containerName,
+				HostConfig = new HostConfig
+				{
+					Binds = [$"{Path.GetFullPath(sourcePath)}:/app:ro"],
+					AutoRemove = true,
+					Memory = 512 * 1024 * 1024,
+					MemorySwap = 0,
+					CPUPeriod = 100000,
+					CPUQuota = 50000,
+					ReadonlyRootfs = true,
+					NetworkMode = "none"
+				},
+				Cmd = fullCommand,
+				AttachStdout = true,
+				AttachStderr = true
+			});
 
-		await docker.Containers.StartContainerAsync(container.ID, null);
+			logger.LogInformation("Запуск контейнера {ContainerName}", containerName);
+			await docker.Containers.StartContainerAsync(container.ID, null);
 
-		var (exitCode, output) = await WaitForContainerExit(container.ID);
+			var (exitCode, output) = await WaitForContainerExit(container.ID);
 
-		return new CompilationResult
+			return new CompilationResult
+			{
+				Success = exitCode == 0,
+				Output = output.stdout,
+				Errors = exitCode != 0
+					? [new CompilationError { ErrorCode = "COMPILE_ERROR", Message = output.stderr }]
+					: []
+			};
+		}
+		catch (Exception ex)
 		{
-			Success = exitCode == 0,
-			Output = output.stdout,
-			Errors = [new CompilationError {ErrorCode = "error", Message = output.stderr}]
-		};
+			logger.LogError(ex, "Ошибка при выполнении в контейнере");
+			return new CompilationResult
+			{
+				Success = false,
+				Output = "",
+				Errors = [new CompilationError { ErrorCode = "DOCKER_ERROR", Message = ex.Message }]
+			};
+		}
 	}
 
 	private async Task<(long, (string stdout, string stderr))> WaitForContainerExit(string containerId)
 	{
-		var stream = await docker.Containers.GetContainerLogsAsync(containerId,
+		using var stream = await docker.Containers.GetContainerLogsAsync(containerId,
 			new ContainerLogsParameters { ShowStderr = true, ShowStdout = true, Follow = true });
 
 		using var reader = new StreamReader(stream);
-		var output = await reader.ReadToEndAsync();
+		var stdout = await reader.ReadToEndAsync();
 
-		var inspect = await docker.Containers.InspectContainerAsync(containerId);
-		return (inspect.State.ExitCode, (output, ""));
+		// Разделяем stdout и stderr (они могут быть смешаны)
+		var lines = stdout.Split('\n');
+		var stdOutLines = new List<string>();
+		var stdErrLines = new List<string>();
+
+		foreach (var line in lines)
+		{
+			if (line.StartsWith("STDERR:", StringComparison.OrdinalIgnoreCase))
+			{
+				stdErrLines.Add(line.Substring(7));
+			}
+			else if (!string.IsNullOrWhiteSpace(line))
+			{
+				stdOutLines.Add(line);
+			}
+		}
+
+		var stdoutResult = string.Join("\n", stdOutLines);
+		var stderrResult = string.Join("\n", stdErrLines);
+
+		try
+		{
+			var inspect = await docker.Containers.InspectContainerAsync(containerId);
+			return (inspect.State.ExitCode, (stdoutResult, stderrResult));
+		}
+		catch
+		{
+			return (1, (stdoutResult, stderrResult));
+		}
 	}
 
-	public void Dispose() => docker?.Dispose();
+	public void Dispose()
+	{
+		docker?.Dispose();
+	}
 }

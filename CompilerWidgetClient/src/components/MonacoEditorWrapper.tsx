@@ -1,6 +1,6 @@
 // src/components/MonacoEditorWrapper.tsx
 import React, { useRef, useEffect } from "react";
-import Editor, { loader } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import * as monaco from "monaco-editor";
 import cls from "./MonacoEditorWrapper.module.scss";
 import StartIcon from "../assets/start.svg?react";
@@ -60,13 +60,13 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
                 onChange={(v) => onChange(v || "")}
                 options={{
                     minimap: { enabled: false },
-                    fontSize: 14,
+                    fontSize: 10,
                     scrollBeyondLastLine: false,
-                    wordWrap: "on",
+                    wordWrap: "off",
                     lineNumbers: "on",
                     folding: true,
                     renderLineHighlight: "all",
-                    tabSize: 2,
+                    tabSize: 4,
                 }}
             />
         </div>

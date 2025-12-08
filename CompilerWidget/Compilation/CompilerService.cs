@@ -27,7 +27,7 @@ public class CompilerService
 		}
 	}
     
-	private static async Task CreateFileStructure(string basePath, List<ProjectFile> files)
+	private static async Task CreateFileStructure(string basePath, List<PhysycalFile> files)
 	{
 		foreach (var file in files)
 		{
