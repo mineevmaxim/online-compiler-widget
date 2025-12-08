@@ -315,6 +315,9 @@ public class FileService : IFileService
 	{
 		try
 		{
+			var newExtension = Path.GetExtension(newFileName);
+			newFileName = Path.GetFileNameWithoutExtension(newFileName);
+			
 			
 			var file = context.ProjectFiles.Find(fileId);
 			if (file == null)
@@ -323,12 +326,12 @@ public class FileService : IFileService
 			var extension = file.Extension;
 			var oldPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(extension));
 			
-			file.FileName = newFileName;
+			
         
 			context.SaveChanges();
 
 			
-			var newPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(extension));
+			var newPhysicalPath = GetPhysicalFilePath(fileId, newExtension);
 
 			if (File.Exists(oldPhysicalPath) && oldPhysicalPath != newPhysicalPath)
 			{
