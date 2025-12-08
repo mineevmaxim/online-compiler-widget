@@ -10,6 +10,7 @@ import {
 import type { Node, Edge, NodeTypes } from "@xyflow/react"; // <— тут правильно
 import "@xyflow/react/dist/style.css";
 import CompilerWidget from "./components/CompilerWidget";
+import { CompilerApi, FileApi, ProjectApi } from "./api";
 
 const initialNodes: Node[] = [
     {
@@ -19,10 +20,10 @@ const initialNodes: Node[] = [
         dragHandle: ".drag-handle__custom",
         data: {
             initialFiles: {
+                "ConsoleApp.csproj":
+                    '<Project Sdk=\"Microsoft.NET.Sdk\">\n    <PropertyGroup>\n        <OutputType>Exe</OutputType>\n        <TargetFramework>net8.0</TargetFramework>\n        <ImplicitUsings>enable</ImplicitUsings>\n        <Nullable>enable</Nullable>\n    </PropertyGroup>\n</Project>',
                 "Program.cs":
-                    'using System;\n\nclass Program\n{\n    static void Main()\n    {\n        Console.WriteLine("Hello from C#!");\n    }\n}',
-                "Utils.cs":
-                    'public static class Utils\n{\n    public static string GetMessage() => "From Utils";\n}'
+                    'using System;\n\npublic class Program\n{\n    public static void Main()\n    {\n        Console.WriteLine(\"Hello World\");\n    }\n}'
             },
             language: "csharp"
         },
@@ -36,6 +37,10 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 export default function App() {
+    const fileApi = new FileApi();
+    const projectApi = new ProjectApi();
+    const compilerApi = new CompilerApi();
+
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
 

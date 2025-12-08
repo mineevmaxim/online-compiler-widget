@@ -391,17 +391,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RenameFileDto"
+                "$ref": "#/components/schemas/CreateFileDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/RenameFileDto"
+                "$ref": "#/components/schemas/CreateFileDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/RenameFileDto"
+                "$ref": "#/components/schemas/CreateFileDto"
               }
             }
           }
@@ -811,6 +811,20 @@
           "compiledAt": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateFileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

@@ -32,13 +32,15 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({ output, history }) => 
             </div>
 
             <div className={cls.content}>
-                {activeTab === 'output' && (
+                {!output && activeTab === 'output' && (
                             <div className={cls.placeholder}>
                                 <OutputIcon className={cls.bigIcon}/>
                                 <p>Нет результата кода</p>
                                 <small>Запустите свой код, чтобы увидеть результат</small>
                             </div>
                 )}
+
+                {output}
 
                 {activeTab === 'history' && (
                             <div className={cls.placeholder}>

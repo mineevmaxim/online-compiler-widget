@@ -8,6 +8,7 @@ docs/CompilationError.md
 docs/CompileRequest.md
 docs/CompileResult.md
 docs/CompilerApi.md
+docs/CreateFileDto.md
 docs/CreateProjectRequest.md
 docs/FileApi.md
 docs/ProcessStatus.md

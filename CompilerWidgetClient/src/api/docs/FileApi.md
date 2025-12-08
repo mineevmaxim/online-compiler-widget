@@ -228,18 +228,18 @@ No authorization required
 import {
     FileApi,
     Configuration,
-    RenameFileDto
+    CreateFileDto
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new FileApi(configuration);
 
 let projectId: string; // (default to undefined)
-let renameFileDto: RenameFileDto; // (optional)
+let createFileDto: CreateFileDto; // (optional)
 
 const { status, data } = await apiInstance.apiFilesProjectProjectIdPost(
     projectId,
-    renameFileDto
+    createFileDto
 );
 ```
 
@@ -247,7 +247,7 @@ const { status, data } = await apiInstance.apiFilesProjectProjectIdPost(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **renameFileDto** | **RenameFileDto**|  | |
+| **createFileDto** | **CreateFileDto**|  | |
 | **projectId** | [**string**] |  | defaults to undefined|
 
 

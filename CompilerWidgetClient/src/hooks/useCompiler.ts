@@ -1,20 +1,54 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { EditorDocument } from "../types/EditorDocument";
-import { v4 as uuidv4 } from 'uuid';
+import { FileApi, ProjectApi, CompilerApi } from "../api";
 
 export function useCompiler(initialFiles?: Record<string, string>) {
-    const [documents, setDocuments] = useState<EditorDocument[]>(() => {
-        if (!initialFiles) return [];
 
-        return Object.entries(initialFiles).map(([path, content]) => ({
-            id: uuidv4(),
-            path,
-            name: path.split("/").pop() || path,
-            language: path.endsWith(".cs") ? "csharp" : "javascript",
-            content,
-            modified: false,
-        }));
-    });
+    const [projectId, setProjectId] = useState<string>("");
+    const [output, setOutput] = useState<string>("");
+
+    const fileApi = new FileApi();
+    const projectApi = new ProjectApi();
+    const compilerApi = new CompilerApi();
+
+    useLayoutEffect(() => {
+        projectApi.apiProjectsCreatePost({ name: "AHAHHAHAHA" })
+            .then(res => {
+                setProjectId(res.data.projectId);
+            })
+            .catch(err => alert(err))
+    }, []);
+
+
+    const [documents, setDocuments] = useState<EditorDocument[]>([]);
+
+    useEffect(() => {
+        if (projectId && initialFiles) {
+            setDocuments([]);
+            Object.keys(initialFiles).forEach(key => {
+                console.log(key, initialFiles[key]);
+
+                fileApi.apiFilesProjectProjectIdPost(projectId, {
+                    name: key,
+                    path: key
+                }).then(res => {
+                    const file: EditorDocument = {
+                        id: res.data,
+                        content: initialFiles[key],
+                        language: "csharp",
+                        modified: false,
+                        name: key,
+                        path: key
+                    };
+                    setDocuments(docs => [...docs, file]);
+                    fileApi.apiFilesFileIdSavePost(file.id, {
+                        content: initialFiles[key],
+                    })
+                        .then(res => console.log(res))
+                })
+            });
+        }
+    }, [projectId]);
 
     const [selectedId, setSelectedId] = useState<string | null>(
         () => documents[0]?.id || null
@@ -33,17 +67,27 @@ export function useCompiler(initialFiles?: Record<string, string>) {
     };
 
     const addDocument = () => {
-        const newDoc: EditorDocument = {
-            id: uuidv4(),
-            path: `file${documents.length + 1}.js`,
-            name: `file${documents.length + 1}.js`,
-            language: "javascript",
-            content: "// New file",
-            modified: false,
-        };
+        let fileId = "";
 
-        setDocuments(d => [...d, newDoc]);
-        setSelectedId(newDoc.id);
+        fileApi.apiFilesProjectProjectIdPost(projectId, {
+            name: `file${documents.length + 1}.cs`,
+            path: `file${documents.length + 1}.cs`
+        })
+            .then(res => {
+                fileId = res.data;
+                const newDoc: EditorDocument = {
+                    id: fileId,
+                    path: `file${documents.length + 1}.cs`,
+                    name: `file${documents.length + 1}.cs`,
+                    language: "csharp",
+                    content: "// New file",
+                    modified: false,
+                };
+
+                setDocuments(d => [...d, newDoc]);
+                setSelectedId(newDoc.id);
+            })
+            .catch(err => alert(err));
     };
 
 
@@ -55,8 +99,24 @@ export function useCompiler(initialFiles?: Record<string, string>) {
 
 
     const deleteDocument = (id: string) => {
-        setDocuments(docs => docs.filter(doc => doc.id !== id));
+        fileApi.apiFilesFileIdDeletePost(id)
+            .then(() => setDocuments(docs => docs.filter(doc => doc.id !== id)))
+            .catch(err => alert(err));
     };
+
+    const run = () => {
+        compilerApi.apiCompileProjectProjectIdRunPost(projectId, { mainFile: "ConsoleApp.csproj" })
+            .then(res => {
+                console.log(res)
+                setOutput(res.data.output ?? "")
+            })
+            .catch(err => alert(err));
+    }
+    const stop = () => {
+        compilerApi.apiCompileProjectProjectIdStopPost(projectId)
+            .then(res => console.log(res.data))
+            .catch(err => alert(err));
+    }
 
     return {
         documents,
@@ -67,7 +127,9 @@ export function useCompiler(initialFiles?: Record<string, string>) {
         addDocument,
         updateDocument,
         deleteDocument,
-        output: "",
+        run,
+        stop,
+        output,
         history: [],
     };
 }

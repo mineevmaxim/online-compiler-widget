@@ -40,6 +40,10 @@ export interface CompileResult {
     'projectId'?: string;
     'compiledAt'?: string;
 }
+export interface CreateFileDto {
+    'name'?: string | null;
+    'path'?: string | null;
+}
 export interface CreateProjectRequest {
     'name'?: string | null;
 }
@@ -599,11 +603,11 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @param {string} projectId 
-         * @param {RenameFileDto} [renameFileDto] 
+         * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectProjectIdPost: async (projectId: string, renameFileDto?: RenameFileDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiFilesProjectProjectIdPost: async (projectId: string, createFileDto?: CreateFileDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiFilesProjectProjectIdPost', 'projectId', projectId)
             const localVarPath = `/api/files/project/{projectId}`
@@ -626,7 +630,7 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(renameFileDto, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(createFileDto, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -695,12 +699,12 @@ export const FileApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} projectId 
-         * @param {RenameFileDto} [renameFileDto] 
+         * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiFilesProjectProjectIdPost(projectId: string, renameFileDto?: RenameFileDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectProjectIdPost(projectId, renameFileDto, options);
+        async apiFilesProjectProjectIdPost(projectId: string, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectProjectIdPost(projectId, createFileDto, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesProjectProjectIdPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -755,12 +759,12 @@ export const FileApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @param {string} projectId 
-         * @param {RenameFileDto} [renameFileDto] 
+         * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectProjectIdPost(projectId: string, renameFileDto?: RenameFileDto, options?: RawAxiosRequestConfig): AxiosPromise<string> {
-            return localVarFp.apiFilesProjectProjectIdPost(projectId, renameFileDto, options).then((request) => request(axios, basePath));
+        apiFilesProjectProjectIdPost(projectId: string, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+            return localVarFp.apiFilesProjectProjectIdPost(projectId, createFileDto, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -814,12 +818,12 @@ export class FileApi extends BaseAPI {
     /**
      * 
      * @param {string} projectId 
-     * @param {RenameFileDto} [renameFileDto] 
+     * @param {CreateFileDto} [createFileDto] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiFilesProjectProjectIdPost(projectId: string, renameFileDto?: RenameFileDto, options?: RawAxiosRequestConfig) {
-        return FileApiFp(this.configuration).apiFilesProjectProjectIdPost(projectId, renameFileDto, options).then((request) => request(this.axios, this.basePath));
+    public apiFilesProjectProjectIdPost(projectId: string, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig) {
+        return FileApiFp(this.configuration).apiFilesProjectProjectIdPost(projectId, createFileDto, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
