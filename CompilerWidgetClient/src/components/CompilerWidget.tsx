@@ -36,7 +36,8 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, data, setNodeHeight
         output,
         history,
         run,
-        stop
+        stop,
+        saveAll
     } = useCompiler(
         data?.initialFiles || {
             'Program.cs': '// Write your code here\nConsole.WriteLine("Hello, World!");',
@@ -230,7 +231,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, data, setNodeHeight
                                     onChange={handleCodeChange}
                                     theme="vs-light"
                                 />
-                                <RunContainer run={run} stop={stop}/>
+                                <RunContainer run={run} stop={stop} save={saveAll}/>
                             </div>
                         ) : (
                             <div style={{ padding: 16, color: '#666' }}>

@@ -315,17 +315,19 @@ public class FileService : IFileService
 	{
 		try
 		{
+			
 			var file = context.ProjectFiles.Find(fileId);
 			if (file == null)
 				throw new FileNotFoundException($"Файл с ID {fileId} не найден");
 
 			var extension = file.Extension;
-
+			var oldPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(extension));
+			
 			file.FileName = newFileName;
         
 			context.SaveChanges();
 
-			var oldPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(extension));
+			
 			var newPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(extension));
 
 			if (File.Exists(oldPhysicalPath) && oldPhysicalPath != newPhysicalPath)

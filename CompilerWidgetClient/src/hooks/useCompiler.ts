@@ -71,7 +71,7 @@ const addDocument = (fileName?: string) => {
     // Если передано имя файла - используем его, иначе генерируем
     const defaultName = `file${documents.length + 1}.cs`;
     const finalName = fileName || defaultName;
-    
+
     let fileId = "";
 
     fileApi.apiFilesProjectProjectIdPost(projectId, {
@@ -80,19 +80,19 @@ const addDocument = (fileName?: string) => {
     })
         .then(res => {
             fileId = res.data;
-            
+
             // Определяем язык по расширению
             let language: "javascript" | "csharp" = "csharp";
             if (finalName.endsWith('.js')) {
                 language = "javascript";
             }
-            
+
             // Начальное содержимое в зависимости от языка
             let initialContent = "// New file";
             if (language === "javascript") {
                 initialContent = "// JavaScript file";
             }
-            
+
             const newDoc: EditorDocument = {
                 id: fileId,
                 path: finalName,
@@ -104,7 +104,7 @@ const addDocument = (fileName?: string) => {
 
             setDocuments(d => [...d, newDoc]);
             setSelectedId(newDoc.id);
-            
+
             // Сохраняем начальное содержимое
             fileApi.apiFilesFileIdSavePost(fileId, {
                 content: initialContent,
@@ -139,7 +139,7 @@ const addDocument = (fileName?: string) => {
         }
 
         // 3. Если меняется контент - сохранить
-        if (true) {
+        if (patch.modified) {
             fileApi.apiFilesFileIdSavePost(id, {
                 content: patch.content,
             }).catch(err => console.error("Ошибка при сохранении:", err));
@@ -167,6 +167,43 @@ const addDocument = (fileName?: string) => {
             .catch(err => alert(err));
     }
 
+    const saveAll = () => {
+        // Находим измененные документы
+        const modifiedDocs = documents.filter(doc => doc.modified);
+
+        if (modifiedDocs.length === 0) {
+            console.log("Нет изменений для сохранения");
+            return;
+        }
+
+        console.log(`Сохранение ${modifiedDocs.length} файлов`);
+
+        // Создаем массив промисов для сохранения
+        const savePromises = modifiedDocs.map(doc =>
+            fileApi.apiFilesFileIdSavePost(doc.id, {
+                content: doc.content
+            })
+        );
+
+        // Выполняем все запросы
+        Promise.all(savePromises)
+            .then(() => {
+                // После успешного сохранения всех файлов сбрасываем флаг modified
+                setDocuments(docs =>
+                    docs.map(doc => ({
+                        ...doc,
+                        // Если документ был среди измененных - сбрасываем флаг
+                        modified: modifiedDocs.some(md => md.id === doc.id) ? false : doc.modified
+                    }))
+                );
+                console.log("Все файлы сохранены");
+            })
+            .catch(error => {
+                console.error("Ошибка при сохранении:", error);
+                alert("Ошибка сохранения файлов");
+            });
+    };
+
     return {
         documents,
         selectedDocument,
@@ -179,6 +216,7 @@ const addDocument = (fileName?: string) => {
         run,
         stop,
         output,
+        saveAll,
         history: [],
     };
 }

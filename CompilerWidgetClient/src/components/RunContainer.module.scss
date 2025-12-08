@@ -50,3 +50,101 @@ button {
   margin-right: 3px;
   height: 13px;
 }
+
+.baseButton {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+
+  color: white;              /* <-- иконкам цвет идёт отсюда */
+}
+
+.baseButton:active {
+  transform: scale(0.97);
+}
+
+/* ===================== */
+/*       RUN BUTTON      */
+/* ===================== */
+.runButton {
+  @extend .baseButton;
+
+  background: #22c55e;
+
+  &:hover {
+    background: #16a34a;
+  }
+
+  &:active {
+    background: #15803d;
+  }
+}
+
+.startIcon {
+  width: 15px;
+  height: 15px;
+  margin-right: 6px;
+  color: white; /* SVG окрашивается */
+}
+
+/* ===================== */
+/*      STOP BUTTON      */
+/* ===================== */
+.stopButton {
+  @extend .baseButton;
+  margin-right: 5px;
+
+  background: #ef4444;
+
+  &:hover {
+    background: #dc2626;
+  }
+
+  &:active {
+    background: #b91c1c;
+  }
+}
+
+.stopIcon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  color: white; // окрашивает stroke="currentColor"
+}
+
+/* ===================== */
+/*      SAVE BUTTON      */
+/* ===================== */
+.saveButton {
+  @extend .baseButton;
+
+  margin-left: auto;
+  margin-right: 7px;
+
+  background: #3b82f6;
+
+  &:hover {
+    background: #2563eb;
+  }
+
+  &:active {
+    background: #1d4ed8;
+  }
+}
+
+.saveIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  color: white;  /* <-- ТЕПЕРЬ РАБОТАЕТ */
+}

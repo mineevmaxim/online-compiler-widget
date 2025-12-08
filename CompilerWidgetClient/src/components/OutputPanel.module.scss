@@ -12,6 +12,7 @@ $tab-active-border: #007bff;
   height: 100%;
   background: $output-bg;
   border-left: 1px solid $output-border;
+  box-sizing: border-box;
 
   .tabs {
     display: flex;
@@ -52,6 +53,7 @@ $tab-active-border: #007bff;
     overflow-y: auto;
     padding: 12px;
     background: #fff;
+    box-sizing: border-box;
 
     pre {
       background: #f8f8f8;
