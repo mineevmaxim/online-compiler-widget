@@ -206,26 +206,38 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                         key={doc.id}
                         className={`${cls.fileItem} ${
                             selectedId === doc.id ? cls.selected : ""
-                        }`}
+                        } ${doc.modified ? cls.modified : ""}`}
                         onClick={() => !editingId && onSelect(doc.id)}
                     >
                         <div className={cls.clickZone}>
                             <span className={cls.fileIcon}>📄</span>
                             
                             {editingId === doc.id ? (
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    className={cls.editInput}
-                                    value={editName}
-                                    onChange={(e) => setEditName(e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, doc.id)}
-                                    onBlur={() => handleBlur(doc.id)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                />
+                                <div className={cls.editContainer}>
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        className={cls.editInput}
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, doc.id)}
+                                        onBlur={() => handleBlur(doc.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                    />
+                                </div>
                             ) : (
-                                <span className={cls.itemText}>{doc.name}</span>
+                                <div className={cls.nameContainer}>
+                                    <span className={cls.itemText}>{doc.name}</span>
+                                    {doc.modified && (
+                                        <span 
+                                            className={cls.modifiedDot} 
+                                            title="Файл изменен (не сохранен)"
+                                        >
+                                            ●
+                                        </span>
+                                    )}
+                                </div>
                             )}
                         </div>
 
