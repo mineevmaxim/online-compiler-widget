@@ -190,15 +190,16 @@ const addDocument = (fileName?: string) => {
             });
     };
 
-    const run = () => {
-        saveAll()
+    const run = async () => {
+        await saveAll()
         setOutput("Запуск программы...")
-        compilerApi.apiCompileProjectProjectIdRunPost(projectId, { mainFile: "ConsoleApp.csproj" })
-            .then(res => {
-                console.log(res)
-                setOutput(res.data.output ?? "")
-            })
-            .catch(err => alert(err));
+        const res = await compilerApi.apiCompileProjectProjectIdRunPost(projectId, {
+            mainFile: "ConsoleApp.csproj"
+        });
+
+        setOutput(res.data.output ?? "");
+        await stop();
+
     }
     const stop = () => {
         compilerApi.apiCompileProjectProjectIdStopPost(projectId)
