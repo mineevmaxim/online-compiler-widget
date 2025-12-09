@@ -153,20 +153,6 @@ const addDocument = (fileName?: string) => {
             .catch(err => alert(err));
     };
 
-    const run = () => {
-        compilerApi.apiCompileProjectProjectIdRunPost(projectId, { mainFile: "ConsoleApp.csproj" })
-            .then(res => {
-                console.log(res)
-                setOutput(res.data.output ?? "")
-            })
-            .catch(err => alert(err));
-    }
-    const stop = () => {
-        compilerApi.apiCompileProjectProjectIdStopPost(projectId)
-            .then(res => console.log(res.data))
-            .catch(err => alert(err));
-    }
-
     const saveAll = () => {
         // Находим измененные документы
         const modifiedDocs = documents.filter(doc => doc.modified);
@@ -203,6 +189,24 @@ const addDocument = (fileName?: string) => {
                 alert("Ошибка сохранения файлов");
             });
     };
+
+    const run = () => {
+        saveAll()
+        setOutput("Запуск программы...")
+        compilerApi.apiCompileProjectProjectIdRunPost(projectId, { mainFile: "ConsoleApp.csproj" })
+            .then(res => {
+                console.log(res)
+                setOutput(res.data.output ?? "")
+            })
+            .catch(err => alert(err));
+    }
+    const stop = () => {
+        compilerApi.apiCompileProjectProjectIdStopPost(projectId)
+            .then(res => console.log(res.data))
+            .catch(err => alert(err));
+    }
+
+
 
     return {
         documents,

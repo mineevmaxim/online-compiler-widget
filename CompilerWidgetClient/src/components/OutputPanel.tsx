@@ -40,7 +40,7 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({ output, history }) => 
                             </div>
                 )}
 
-                {output}
+                <p className={cls.output}>{output}</p>
 
                 {activeTab === 'history' && (
                             <div className={cls.placeholder}>

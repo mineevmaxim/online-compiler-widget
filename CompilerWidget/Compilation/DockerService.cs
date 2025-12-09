@@ -99,13 +99,16 @@ public class DockerService : IDisposable
 
 		foreach (var line in lines)
 		{
-			if (line.StartsWith("STDERR:", StringComparison.OrdinalIgnoreCase))
+			var cleanLine = new string(line
+				.Where(c => c >= 32 || c == '\t')
+				.ToArray());
+			if (cleanLine.StartsWith("STDERR:", StringComparison.OrdinalIgnoreCase))
 			{
-				stdErrLines.Add(line.Substring(7));
+				stdErrLines.Add(cleanLine.Substring(7));
 			}
-			else if (!string.IsNullOrWhiteSpace(line))
+			else if (!string.IsNullOrWhiteSpace(cleanLine))
 			{
-				stdOutLines.Add(line);
+				stdOutLines.Add(cleanLine);
 			}
 		}
 
