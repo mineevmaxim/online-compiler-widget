@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<CSharpCompilerService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<DockerService>();
+builder.Services.AddScoped<CompilerService>();
 
 var sqlConnectionString = configuration.GetConnectionString("DataAccessPostgreSqlProvider");
 

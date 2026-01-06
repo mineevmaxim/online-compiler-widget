@@ -21,9 +21,9 @@ const initialNodes: Node[] = [
         data: {
             initialFiles: {
                 "ConsoleApp.csproj":
-                    '<Project Sdk=\"Microsoft.NET.Sdk\">\n    <PropertyGroup>\n        <OutputType>Exe</OutputType>\n        <TargetFramework>net8.0</TargetFramework>\n        <ImplicitUsings>enable</ImplicitUsings>\n        <Nullable>enable</Nullable>\n    </PropertyGroup>\n</Project>',
+                    '<Project Sdk="Microsoft.NET.Sdk">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net8.0</TargetFramework>\n  </PropertyGroup>\n</Project>',
                 "Program.cs":
-                    'using System;\n\npublic class Program\n{\n    public static void Main()\n    {\n        Console.WriteLine(\"Hello World\");\n    }\n}'
+                    'using System;\n\nnamespace ConsoleApp\n{\n    class Program\n    {\n        static void Main(string[] args)\n        {\n            Console.WriteLine("Hello from compiled C#!");\n            Console.WriteLine($"Current time: {DateTime.Now}");\n        }\n    }\n}'
             },
             language: "csharp"
         },

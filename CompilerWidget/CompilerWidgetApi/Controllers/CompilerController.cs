@@ -11,18 +11,18 @@ namespace CompilerWidgetApi.Controllers;
 public class CompilerController : ControllerBase
 {
 	private readonly IFileService fileService;
-	private readonly DockerService dockerService;
+	private readonly CompilerService compilerService;
 	private readonly ILogger<CompilerController> logger;
 
 	private static readonly Dictionary<Guid, RunningProcessInfo> RunningProcesses = new();
 
 	public CompilerController(
 		IFileService fileService,
-		DockerService dockerService,
+		CompilerService compilerService,
 		ILogger<CompilerController> logger)
 	{
 		this.fileService = fileService;
-		this.dockerService = dockerService;
+		this.compilerService = compilerService;
 		this.logger = logger;
 	}
 
@@ -46,7 +46,7 @@ public class CompilerController : ControllerBase
 
 			var tempPath = CreateTempProjectDirectory(projectId, projectFiles);
 
-			var result = await dockerService.RunCompilerContainer(tempPath, mainFile);
+			var result = await compilerService.RunCompilerContainer(tempPath, mainFile);
 
 			var processInfo = new RunningProcessInfo
 			{
@@ -173,7 +173,7 @@ public class CompilerController : ControllerBase
 				return BadRequest(new { Error = "Не найден .csproj файл" });
 			}
 
-			var result = await dockerService.RunCompilerContainer(tempPath, mainFile);
+			var result = await compilerService.RunCompilerContainer(tempPath, mainFile);
 
 			try
 			{
