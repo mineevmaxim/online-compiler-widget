@@ -1,29 +1,23 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS, useEffect, useLayoutEffect, useState } from "react";
 import type { EditorDocument } from "../types/EditorDocument";
 import { FileApi, ProjectApi, CompilerApi } from "../api";
 
-export function useCompiler(initialFiles?: Record<string, string>) {
+export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<string, string>) {
 
-    const [projectId, setProjectId] = useState<string>("");
+    const [isInitialized, setIsInitialized] = useState<boolean>(false);
+    const [needToCreateFiles, setNeedToCreateFiles] = useState<boolean>(isNew);
+
+    const [projectId, setProjectId] = useState<string>(id);
     const [output, setOutput] = useState<string>("");
 
     const fileApi = new FileApi();
-    const projectApi = new ProjectApi();
     const compilerApi = new CompilerApi();
-
-    useLayoutEffect(() => {
-        projectApi.apiProjectsCreatePost({ name: "AHAHHAHAHA" })
-            .then(res => {
-                setProjectId(res.data.projectId);
-            })
-            .catch(err => alert(err))
-    }, []);
 
 
     const [documents, setDocuments] = useState<EditorDocument[]>([]);
 
     useEffect(() => {
-        if (projectId && initialFiles) {
+        if (projectId && initialFiles && !isInitialized && needToCreateFiles) {
             setDocuments([]);
             Object.keys(initialFiles).forEach(key => {
                 console.log(key, initialFiles[key]);
@@ -46,9 +40,36 @@ export function useCompiler(initialFiles?: Record<string, string>) {
                     })
                         .then(res => console.log(res))
                 })
+                    .finally(() => setIsInitialized(true));
             });
         }
-    }, [projectId]);
+    }, [projectId, initialFiles, needToCreateFiles]);
+
+    useEffect(() => {
+        if (projectId && !isInitialized && !needToCreateFiles) {
+            setDocuments([]);
+            fileApi.apiFilesProjectIdGet(projectId)
+                .then((files) => {
+                    files.data.forEach(file => {
+                        console.log(file.fileName, file.fileId);
+
+                        fileApi.apiFilesReadFileIdGet(file.fileId!).then(res => {
+                            const document: EditorDocument = {
+                                id: file.fileId!,
+                                content: res.data,
+                                language: "csharp",
+                                modified: false,
+                                name: file.fileName!,
+                                path: file.path!
+                            };
+                            setDocuments(docs => [...docs, document]);
+                        })
+                            .finally(() => setIsInitialized(true));
+                    });
+                })
+
+        }
+    }, [projectId, initialFiles, needToCreateFiles]);
 
     const [selectedId, setSelectedId] = useState<string | null>(
         () => documents[0]?.id || null
@@ -67,54 +88,54 @@ export function useCompiler(initialFiles?: Record<string, string>) {
     };
 
     // В useCompiler.ts обновляем функцию addDocument:
-const addDocument = (fileName?: string) => {
-    // Если передано имя файла - используем его, иначе генерируем
-    const defaultName = `file${documents.length + 1}.cs`;
-    const finalName = fileName || defaultName;
+    const addDocument = (fileName?: string) => {
+        // Если передано имя файла - используем его, иначе генерируем
+        const defaultName = `file${documents.length + 1}.cs`;
+        const finalName = fileName || defaultName;
 
-    let fileId = "";
+        let fileId = "";
 
-    fileApi.apiFilesProjectProjectIdPost(projectId, {
-        name: finalName,
-        path: finalName
-    })
-        .then(res => {
-            fileId = res.data;
-
-            // Определяем язык по расширению
-            let language: "javascript" | "csharp" = "csharp";
-            if (finalName.endsWith('.js')) {
-                language = "javascript";
-            }
-
-            // Начальное содержимое в зависимости от языка
-            let initialContent = "// New file";
-            if (language === "javascript") {
-                initialContent = "// JavaScript file";
-            }
-
-            const newDoc: EditorDocument = {
-                id: fileId,
-                path: finalName,
-                name: finalName,
-                language: language,
-                content: initialContent,
-                modified: false,
-            };
-
-            setDocuments(d => [...d, newDoc]);
-            setSelectedId(newDoc.id);
-
-            // Сохраняем начальное содержимое
-            fileApi.apiFilesFileIdSavePost(fileId, {
-                content: initialContent,
-            }).catch(err => console.error("Ошибка при сохранении:", err));
+        fileApi.apiFilesProjectProjectIdPost(projectId, {
+            name: finalName,
+            path: finalName
         })
-        .catch(err => {
-            console.error("Ошибка при создании файла:", err);
-            alert(`Ошибка при создании файла: ${err.message}`);
-        });
-};
+            .then(res => {
+                fileId = res.data;
+
+                // Определяем язык по расширению
+                let language: "javascript" | "csharp" = "csharp";
+                if (finalName.endsWith('.js')) {
+                    language = "javascript";
+                }
+
+                // Начальное содержимое в зависимости от языка
+                let initialContent = "// New file";
+                if (language === "javascript") {
+                    initialContent = "// JavaScript file";
+                }
+
+                const newDoc: EditorDocument = {
+                    id: fileId,
+                    path: finalName,
+                    name: finalName,
+                    language: language,
+                    content: initialContent,
+                    modified: false,
+                };
+
+                setDocuments(d => [...d, newDoc]);
+                setSelectedId(newDoc.id);
+
+                // Сохраняем начальное содержимое
+                fileApi.apiFilesFileIdSavePost(fileId, {
+                    content: initialContent,
+                }).catch(err => console.error("Ошибка при сохранении:", err));
+            })
+            .catch(err => {
+                console.error("Ошибка при создании файла:", err);
+                alert(`Ошибка при создании файла: ${err.message}`);
+            });
+    };
 
     const updateDocument = (id: string, patch: Partial<EditorDocument>) => {
         const doc = documents.find(d => d.id === id);

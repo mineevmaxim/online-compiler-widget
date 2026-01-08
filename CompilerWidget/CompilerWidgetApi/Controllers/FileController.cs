@@ -40,11 +40,19 @@ public class FileController(IFileService fileService): Controller
 		return Ok(result);
 	}
 
-	[HttpPost]
-	[Route("{fileId:guid}")]
-	public ActionResult<string> GetFile(Guid fileId)
+	[HttpGet]
+	[Route("read/{fileId:guid}")]
+	public ActionResult<string> GetFile([FromRoute]Guid fileId)
 	{
 		var file = fileService.Read(fileId);
 		return Ok(file);
+	}
+	
+	[HttpGet]
+	[Route("{projectId:guid}")]
+	public ActionResult<IEnumerable<FileMetadata>> GetProjectFiles([FromRoute]Guid projectId)
+	{
+		var files = fileService.GetProjectFiles(projectId);
+		return Ok(files);
 	}
 }

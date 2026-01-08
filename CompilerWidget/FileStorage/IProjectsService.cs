@@ -6,6 +6,13 @@ public interface IProjectService
 	/// Создает новый проект
 	/// </summary>
 	Task<Guid> CreateProjectAsync(string? name = null);
+	
+	/// <summary>
+	/// created -> true, get -> false
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	Task<bool> GetOrCreateProjectAsync(Guid id);
     
 	/// <summary>
 	/// Удаляет проект со всеми файлами

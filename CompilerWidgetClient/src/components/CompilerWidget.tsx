@@ -14,16 +14,34 @@ import CloseIcon from "../assets/closeIcon.svg?react";
 import type { EditorDocument } from '../types/EditorDocument';
 import { RunContainer } from "./RunContainer.tsx";
 
+interface GetInfoModel {
+  "widgetId": number,
+  "userId": number,
+  "role": string,
+  "config": string, // json
+  "board": {
+    "id": number,
+    "name": string,
+    "parentId": number
+  }
+}
+
+interface ConfigModel {
+    // ... то, как мы будем общаться с потребителем
+}
+
 interface CompilerWidgetProps {
     id: string;
+    isNew: boolean;
     data?: {
         initialFiles?: Record<string, string>;
         language?: 'csharp' | 'js';
     };
     setNodeHeight?: (id: string, height: number) => void;
+    getInfo?: (info: GetInfoModel) => void; 
 }
 
-const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, data, setNodeHeight }) => {
+const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNodeHeight }) => {
     const {
         documents,
         selectedDocument,
@@ -39,7 +57,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, data, setNodeHeight
         stop,
         saveAll
     } = useCompiler(
-        data?.initialFiles || {
+        id, isNew, data?.initialFiles || {
             'Program.cs': '// Write your code here\nConsole.WriteLine("Hello, World!");',
         }
     );

@@ -1,7 +1,6 @@
 {
-  "name": "compilerwidgetclient",
-  "private": true,
-  "version": "0.0.0",
+  "name": "online-compiler-widget",
+  "version": "0.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -3,22 +3,12 @@ using Microsoft.Extensions.Logging;
 
 namespace FileStorage;
 
-public class ProjectService : IProjectService
+public class ProjectService(
+	FileStorageDbContext context,
+	IFileService fileService,
+	ILogger<ProjectService> logger)
+	: IProjectService
 {
-	private readonly FileStorageDbContext context;
-	private readonly IFileService fileService;
-	private readonly ILogger<ProjectService> logger;
-
-	public ProjectService(
-		FileStorageDbContext context,
-		IFileService fileService,
-		ILogger<ProjectService> logger)
-	{
-		this.context = context;
-		this.fileService = fileService;
-		this.logger = logger;
-	}
-
 	public async Task<Guid> CreateProjectAsync(string? name = null)
 	{
 		try
@@ -42,6 +32,20 @@ public class ProjectService : IProjectService
 			logger.LogError(ex, "Ошибка при создании проекта");
 			throw;
 		}
+	}
+
+	public async Task<bool> GetOrCreateProjectAsync(Guid id)
+	{
+		var project = await context.Projects.AsNoTracking().FirstOrDefaultAsync(proj =>  proj.ProjectId == id);
+		if (project != null) return false;
+		var newProject = new Project()
+		{
+			ProjectId = id,
+			ProjectName = $"Project_{DateTime.Now:yyyyMMdd_HHmmss}"
+		};
+		await context.Projects.AddAsync(newProject);
+		await context.SaveChangesAsync();
+		return true;
 	}
 
 	public async Task<bool> DeleteProjectAsync(Guid projectId)

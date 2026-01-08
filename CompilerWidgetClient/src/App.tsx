@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useLayoutEffect } from "react";
 import {
     ReactFlow,
     Controls,
@@ -10,7 +10,7 @@ import {
 import type { Node, Edge, NodeTypes } from "@xyflow/react"; // <— тут правильно
 import "@xyflow/react/dist/style.css";
 import CompilerWidget from "./components/CompilerWidget";
-import { CompilerApi, FileApi, ProjectApi } from "./api";
+import { getInfo, type GetInfoModel } from "./getInfo";
 
 const initialNodes: Node[] = [
     {
@@ -37,9 +37,29 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 export default function App() {
-    const fileApi = new FileApi();
-    const projectApi = new ProjectApi();
-    const compilerApi = new CompilerApi();
+    const widgetId = "123e4567-e89b-12d3-a456-426614174000";
+
+    const [isNew, setIsNew] = useState<boolean | null>(null);
+
+    const model: GetInfoModel = {
+        widgetId: widgetId,
+        userId: 123,
+        board: {
+            id: 123,
+            name: 'asd',
+            parentId: 132
+        },
+        config: "",
+        role: "ads"
+    }
+
+    useLayoutEffect(() => {
+        getInfo(model)
+            .then(res => {
+                console.log(res);
+                setIsNew(res)
+            })
+    }, [])
 
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
@@ -52,13 +72,15 @@ export default function App() {
         );
     };
 
-    // типизация через NodeTypes
     const nodeTypes: NodeTypes = useMemo(
         () => ({
-            compiler: (props) => <CompilerWidget {...props} setNodeHeight={setNodeHeight} />
-        }),
-        []
+            compiler: (props) => <CompilerWidget id={widgetId} isNew={isNew ?? true} data={props.data} setNodeHeight={setNodeHeight} />
+        }), [isNew, widgetId]
     );
+
+    if (isNew === null) {
+        return <div>Загрузка проекта...</div>; // Ранний return, useMemo не вызывается!
+    }
 
     return (
         <div style={{ width: "100vw", height: "100vh" }}>

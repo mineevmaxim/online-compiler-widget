@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 |[**apiProjectsCreatePost**](#apiprojectscreatepost) | **POST** /api/projects/create | |
 |[**apiProjectsGet**](#apiprojectsget) | **GET** /api/projects | |
+|[**apiProjectsGetOrCreateProjectIdPost**](#apiprojectsgetorcreateprojectidpost) | **POST** /api/projects/getOrCreate/{projectId} | |
 |[**apiProjectsProjectIdDelete**](#apiprojectsprojectiddelete) | **DELETE** /api/projects/{projectId} | |
 |[**apiProjectsProjectIdDuplicatePost**](#apiprojectsprojectidduplicatepost) | **POST** /api/projects/{projectId}/duplicate | |
 |[**apiProjectsProjectIdGet**](#apiprojectsprojectidget) | **GET** /api/projects/{projectId} | |
@@ -97,6 +98,56 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: text/plain, application/json, text/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiProjectsGetOrCreateProjectIdPost**
+> apiProjectsGetOrCreateProjectIdPost()
+
+
+### Example
+
+```typescript
+import {
+    ProjectApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new ProjectApi(configuration);
+
+let projectId: string; // (default to undefined)
+
+const { status, data } = await apiInstance.apiProjectsGetOrCreateProjectIdPost(
+    projectId
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **projectId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
 
 
 ### HTTP response details

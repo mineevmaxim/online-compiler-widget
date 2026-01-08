@@ -9,18 +9,35 @@ public class FileService : IFileService
 	private readonly ILogger<FileService> logger;
 	private readonly string storagePath;
 
-	public FileService(
-		FileStorageDbContext context,
-		ILogger<FileService> logger,
-		string storagePath = "projects")
+	private static readonly Dictionary<ProjectFileExtension, string> ToExtensionDict = new()
+	{
+		{ ProjectFileExtension.Unknown, "" },
+		{ ProjectFileExtension.CSharp, ".cs" },
+		{ ProjectFileExtension.Js, ".js" },
+		{ ProjectFileExtension.Json, ".json" },
+		{ ProjectFileExtension.Txt, ".txt" },
+		{ ProjectFileExtension.CsProj, ".csproj" },
+	};
+
+	private static readonly Dictionary<string, ProjectFileExtension> FromExtensionDict = new()
+	{
+		{ "", ProjectFileExtension.Unknown },
+		{ ".cs", ProjectFileExtension.CSharp },
+		{ ".js", ProjectFileExtension.Js },
+		{ ".json", ProjectFileExtension.Json },
+		{ ".txt", ProjectFileExtension.Txt },
+		{ ".csproj", ProjectFileExtension.CsProj },
+	};
+
+	public FileService(FileStorageDbContext context, ILogger<FileService> logger)
 	{
 		this.context = context;
 		this.logger = logger;
-		this.storagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, storagePath);
+		storagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "projects");
 
-		if (Directory.Exists(this.storagePath)) return;
-		Directory.CreateDirectory(this.storagePath);
-		this.logger.LogInformation("Создана корневая папка хранилища: {Path}", this.storagePath);
+		if (Directory.Exists(storagePath)) return;
+		Directory.CreateDirectory(storagePath);
+		this.logger.LogInformation("Создана корневая папка хранилища: {Path}", storagePath);
 	}
 
 	public Guid Create(string fileName, Guid projectId, string path)
@@ -64,15 +81,13 @@ public class FileService : IFileService
 
 			File.WriteAllText(filePath, string.Empty);
 
-			logger.LogInformation("Создан файл {FileName} с ID {FileId} в проекте {ProjectId}",
-				fileName, fileId, projectId);
+			logger.LogInformation("Создан файл {FileName} с ID {FileId} в проекте {ProjectId}", fileName, fileId, projectId);
 
 			return fileId;
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "Ошибка при создании файла {FileName} в проекте {ProjectId}",
-				fileName, projectId);
+			logger.LogError(ex, "Ошибка при создании файла {FileName} в проекте {ProjectId}", fileName, projectId);
 			throw;
 		}
 	}
@@ -86,10 +101,9 @@ public class FileService : IFileService
 				throw new FileNotFoundException($"Файл с ID {fileId} не найден");
 
 			var filePath = GetPhysicalFilePath(fileId, ToExtension(file.Extension));
-			if (!File.Exists(filePath))
-				throw new FileNotFoundException($"Физический файл {filePath} не найден");
-
-			return File.ReadAllText(filePath, Encoding.UTF8);
+			return !File.Exists(filePath)
+				? throw new FileNotFoundException($"Физический файл {filePath} не найден")
+				: File.ReadAllText(filePath, Encoding.UTF8);
 		}
 		catch (Exception ex)
 		{
@@ -105,10 +119,9 @@ public class FileService : IFileService
 			var file = context.ProjectFiles
 				.FirstOrDefault(f => f.Path == path.Trim('/'));
 
-			if (file == null)
-				throw new FileNotFoundException($"Файл по пути {path} не найден");
-
-			return Read(file.FileId);
+			return file == null
+				? throw new FileNotFoundException($"Файл по пути {path} не найден")
+				: Read(file.FileId);
 		}
 		catch (Exception ex)
 		{
@@ -133,8 +146,7 @@ public class FileService : IFileService
 
 			context.SaveChanges();
 
-			logger.LogInformation("Обновлен файл {FileId}, новый размер: {Size} байт",
-				fileId, content.Length);
+			logger.LogInformation("Обновлен файл {FileId}, новый размер: {Size} байт", fileId, content.Length);
 		}
 		catch (Exception ex)
 		{
@@ -149,9 +161,7 @@ public class FileService : IFileService
 		{
 			var file = context.ProjectFiles.Find(fileId);
 			if (file == null)
-			{
 				throw new FileNotFoundException($"Файл с ID {fileId} не найден");
-			}
 
 			var filePath = GetPhysicalFilePath(fileId, ToExtension(file.Extension));
 			if (File.Exists(filePath))
@@ -173,26 +183,38 @@ public class FileService : IFileService
 		}
 	}
 
-	private string GetPhysicalFilePath(Guid fileId, string extension)
+	private string GetPhysicalFilePath(Guid fileId, string? fileName, string? extension, string? directoryPath = null)
 	{
 		var file = context.ProjectFiles.Find(fileId);
 		if (file == null)
 			throw new FileNotFoundException($"Файл с ID {fileId} не найден в БД");
 
-		var directoryPath = !string.IsNullOrEmpty(file.Path)
-			? file.Path.Replace('/', Path.DirectorySeparatorChar)
+		var actualFileName = fileName ?? file.FileName;
+		var actualDirectoryPath = directoryPath ?? file.Path;
+		var actualExtension = extension ?? ToExtension(file.Extension);
+
+		var normalizedDirectoryPath = !string.IsNullOrEmpty(actualDirectoryPath)
+			? actualDirectoryPath.Replace('/', Path.DirectorySeparatorChar)
 			: string.Empty;
 
 		var projectDir = Path.Combine(storagePath, file.ProjectId.ToString());
-		var fullDir = string.IsNullOrEmpty(directoryPath)
+		var fullDir = string.IsNullOrEmpty(normalizedDirectoryPath)
 			? projectDir
-			: Path.Combine(projectDir, directoryPath);
+			: Path.Combine(projectDir, normalizedDirectoryPath);
 
 		if (!Directory.Exists(fullDir))
 			Directory.CreateDirectory(fullDir);
 
-		var fileName = $"{file.FileName}{extension}";
-		return Path.Combine(fullDir, fileName);
+		var fullFileName = $"{actualFileName}{actualExtension}";
+		return Path.Combine(fullDir, fullFileName);
+	}
+
+	private string GetPhysicalFilePath(Guid fileId, string? extension)
+	{
+		var file = context.ProjectFiles.Find(fileId);
+		return file == null
+			? throw new FileNotFoundException($"Файл с ID {fileId} не найден в БД")
+			: GetPhysicalFilePath(fileId, file.FileName, extension ?? ToExtension(file.Extension), file.Path);
 	}
 
 	public void Move(Guid fileId, string newPath)
@@ -207,9 +229,7 @@ public class FileService : IFileService
 			newDirectoryPath = newDirectoryPath.Trim('/');
 
 			var existingFile = context.ProjectFiles
-				.FirstOrDefault(f => f.Path == newDirectoryPath &&
-				                     f.FileName == file.FileName &&
-				                     f.ProjectId == file.ProjectId);
+				.FirstOrDefault(f => f.Path == newDirectoryPath && f.FileName == file.FileName && f.ProjectId == file.ProjectId);
 
 			if (existingFile != null && existingFile.FileId != fileId)
 				throw new InvalidOperationException($"Файл {file.FileName} уже существует в пути {newPath}");
@@ -242,9 +262,7 @@ public class FileService : IFileService
 	{
 		try
 		{
-			while (!string.IsNullOrEmpty(directory) &&
-			       Directory.Exists(directory) &&
-			       IsDirectoryEmpty(directory) &&
+			while (!string.IsNullOrEmpty(directory) && Directory.Exists(directory) && IsDirectoryEmpty(directory) &&
 			       directory.StartsWith(storagePath))
 			{
 				Directory.Delete(directory);
@@ -295,70 +313,84 @@ public class FileService : IFileService
 
 	public void Rename(Guid fileId, string newFileName)
 	{
+		using var transaction = context.Database.BeginTransaction();
+
 		try
 		{
-			var newExtension = Path.GetExtension(newFileName);
-			newFileName = Path.GetFileNameWithoutExtension(newFileName);
-
 			var file = context.ProjectFiles.Find(fileId);
 			if (file == null)
 				throw new FileNotFoundException($"Файл с ID {fileId} не найден");
 
-			var extension = file.Extension;
-			var oldPhysicalPath = GetPhysicalFilePath(fileId, ToExtension(extension));
+			if (string.IsNullOrWhiteSpace(newFileName))
+				throw new ArgumentException("Имя файла не может быть пустым", nameof(newFileName));
 
+			var newExtension = Path.GetExtension(newFileName);
+			var newNameWithoutExtension = Path.GetFileNameWithoutExtension(newFileName);
+
+			if (string.IsNullOrEmpty(newExtension))
+				throw new ArgumentException("Расширение файла обязательно", nameof(newFileName));
+
+			var oldFileName = file.FileName;
+			var oldExtension = file.Extension;
+			var oldDirectoryPath = file.Path;
+
+			var oldPhysicalPath = GetPhysicalFilePath(
+				fileId,
+				oldFileName,
+				ToExtension(oldExtension),
+				oldDirectoryPath);
+
+			var newPhysicalPath = GetPhysicalFilePath(
+				fileId,
+				newNameWithoutExtension,
+				newExtension,
+				oldDirectoryPath);
+
+			var isFileNameExists = context.ProjectFiles
+				.Any(projectFile => projectFile.ProjectId == file.ProjectId &&
+				                    projectFile.FileId != fileId &&
+				                    projectFile.FileName == newNameWithoutExtension &&
+				                    projectFile.Extension == FromExtension(newExtension));
+
+			if (isFileNameExists)
+				throw new InvalidOperationException($"Файл '{newFileName}' уже существует");
+
+			file.FileName = newNameWithoutExtension;
+			file.Extension = FromExtension(newExtension);
 
 			context.SaveChanges();
 
-
-			var newPhysicalPath = GetPhysicalFilePath(fileId, newExtension);
-
 			if (File.Exists(oldPhysicalPath) && oldPhysicalPath != newPhysicalPath)
 			{
-				var newDir = Path.GetDirectoryName(newPhysicalPath);
-				if (newDir != null && !Directory.Exists(newDir))
-					Directory.CreateDirectory(newDir);
+				var newDirectory = Path.GetDirectoryName(newPhysicalPath);
+				if (!string.IsNullOrEmpty(newDirectory) && !Directory.Exists(newDirectory))
+					Directory.CreateDirectory(newDirectory);
 
 				File.Move(oldPhysicalPath, newPhysicalPath);
-
 				DeleteEmptyDirectories(Path.GetDirectoryName(oldPhysicalPath));
 			}
+			else if (!File.Exists(oldPhysicalPath))
+			{
+				logger.LogWarning("Физический файл не найден по пути: {OldPath}", oldPhysicalPath);
 
-			logger.LogInformation("Файл {FileId} переименован в {NewFileName}{Extension}",
-				fileId, newFileName, extension);
+				if (File.Exists(newPhysicalPath))
+					logger.LogInformation("Файл уже существует по новому пути: {NewPath}", newPhysicalPath);
+			}
+
+			transaction.Commit();
+
+			logger.LogInformation("Файл {FileId} переименован с '{OldFileName}{OldExtension}' на '{NewFileName}{NewExtension}'",
+				fileId, oldFileName, oldExtension, newNameWithoutExtension, newExtension);
 		}
 		catch (Exception ex)
 		{
-			logger.LogError(ex, "Ошибка при переименовании файла {FileId} в {NewFileName}", fileId, newFileName);
+			transaction.Rollback();
+			logger.LogError(ex, "Ошибка при переименовании файла {FileId}", fileId);
 			throw;
 		}
 	}
 
-	private static string ToExtension(ProjectFileExtension extension)
-	{
-		var dict = new Dictionary<ProjectFileExtension, string>()
-		{
-			{ ProjectFileExtension.Unknown, "" },
-			{ ProjectFileExtension.CSharp, ".cs" },
-			{ ProjectFileExtension.Js, ".js" },
-			{ ProjectFileExtension.Json, ".json" },
-			{ ProjectFileExtension.Txt, ".txt" },
-			{ ProjectFileExtension.CsProj, ".csproj" },
-		};
-		return dict[extension];
-	}
+	private static string ToExtension(ProjectFileExtension extension) => ToExtensionDict[extension];
 
-	private static ProjectFileExtension FromExtension(string extension)
-	{
-		var dict = new Dictionary<string, ProjectFileExtension>()
-		{
-			{ "", ProjectFileExtension.Unknown },
-			{ ".cs", ProjectFileExtension.CSharp },
-			{ ".js", ProjectFileExtension.Js },
-			{ ".json", ProjectFileExtension.Json },
-			{ ".txt", ProjectFileExtension.Txt },
-			{ ".csproj", ProjectFileExtension.CsProj },
-		};
-		return dict[extension];
-	}
+	private static ProjectFileExtension FromExtension(string extension) => FromExtensionDict[extension];
 }

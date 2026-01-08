@@ -221,20 +221,18 @@ public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 					Errors = []
 				};
 			}
-			else
-			{
-				var errors = emitResult.Diagnostics
-					.Where(d => d.Severity == DiagnosticSeverity.Error)
-					.Select(d => new CompilationError(d))
-					.ToList();
 
-				return new CompilationResult
-				{
-					Success = false,
-					Output = "Ошибки компиляции:",
-					Errors = errors
-				};
-			}
+			var errors = emitResult.Diagnostics
+				.Where(d => d.Severity == DiagnosticSeverity.Error)
+				.Select(d => new CompilationError(d))
+				.ToList();
+
+			return new CompilationResult
+			{
+				Success = false,
+				Output = "Ошибки компиляции:",
+				Errors = errors
+			};
 		}
 		catch (Exception ex)
 		{

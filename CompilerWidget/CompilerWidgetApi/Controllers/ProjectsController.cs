@@ -33,6 +33,25 @@ public class ProjectController : ControllerBase
 			return StatusCode(500, new { Error = ex.Message });
 		}
 	}
+	
+	[HttpPost("getOrCreate/{projectId}")]
+	public async Task<ActionResult> GetOrCreateProject([FromRoute] string projectId)
+	{
+		var id = Guid.Parse(projectId);
+		try
+		{
+			Console.WriteLine(Guid.Parse(projectId));
+			var projectCreated = await projectService.GetOrCreateProjectAsync(id);
+			if (projectCreated)
+				return Created();
+			return Ok();
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при создании проекта");
+			return StatusCode(500, new { Error = ex.Message });
+		}
+	}
 
 	[HttpDelete("{projectId:guid}")]
 	public async Task<ActionResult> DeleteProject(Guid projectId)

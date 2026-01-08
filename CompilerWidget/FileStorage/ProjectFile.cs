@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace FileStorage;
+﻿namespace FileStorage;
 
 public class ProjectFile
 {
