@@ -37,7 +37,7 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 export default function App() {
-    const widgetId = "123e4567-e89b-12d3-a456-426614174000";
+    const widgetId = "143e4577-e89b-12d3-a456-426614174000";
 
     const [isNew, setIsNew] = useState<boolean | null>(null);
 

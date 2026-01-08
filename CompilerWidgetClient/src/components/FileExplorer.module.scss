@@ -11,6 +11,38 @@ $file-selected: #d0eaff;
   height: 100%;
   width: auto;
 
+  // Добавьте эти стили в конец файла
+
+.dragOver {
+    background: #e3f2fd !important;
+    outline: 2px dashed #2196f3;
+    outline-offset: -2px;
+}
+
+.dragging {
+    opacity: 0.5;
+    background: #f5f5f5;
+}
+
+.modalSubtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border-left: 3px solid #2196f3;
+}
+
+// Для лучшей визуализации при перетаскивании
+.fileItem[draggable="true"] {
+    cursor: grab;
+    
+    &:active {
+        cursor: grabbing;
+    }
+}
+
   .header {
     padding: 6px 7px;
     display: flex;
@@ -19,6 +51,7 @@ $file-selected: #d0eaff;
     background: #F1F5F9;
     border-bottom: 1px solid #E2E8F0;
     min-height: 21px;
+    position: relative;
 
     span {
       font-family: Arial;
@@ -39,7 +72,12 @@ $file-selected: #d0eaff;
       }
     }
 
-    button {
+    .addButtonWrapper {
+      position: relative;
+      margin-left: auto;
+    }
+
+    .addButton {
       all: unset;
       cursor: pointer;
       display: inline-flex;
@@ -48,11 +86,8 @@ $file-selected: #d0eaff;
       padding: 0;
       margin: 0;
       outline: none;
-    }
-
-    .addButton {
       height: auto;
-      margin-left: auto;
+      
       .plusIcon {
         height: 13px;
       }
@@ -95,10 +130,57 @@ $file-selected: #d0eaff;
         }
       }
 
-      .fileIcon {
-        font-size: 7px;
-        margin-right: 3px;
+      .clickZone {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        gap: 4px;
+        min-width: 0;
+        padding: 0;
+        margin: 0;
+      }
+
+      .folderToggle {
+        font-size: 6px;
+        color: #666;
+        width: 8px;
+        height: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 2px;
         flex-shrink: 0;
+        
+        &:hover {
+          color: #333;
+        }
+      }
+
+      .itemIcon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .folderIcon {
+        width: 12px;
+        height: 12px;
+        color: #90caf9;
+        
+        svg {
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      .fileIcon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .nameContainer {
@@ -126,7 +208,7 @@ $file-selected: #d0eaff;
       .modifiedDot {
         display: none;
         color: #ff6b6b;
-        font-size: 12px;
+        font-size: 8px;
         flex-shrink: 0;
         animation: pulse 2s infinite;
         
@@ -173,20 +255,10 @@ $file-selected: #d0eaff;
   }
 }
 
-.clickZone {
-  display: flex;
-  align-items: center;
-  flex-grow: 1;
-  gap: 4px;
-  min-width: 0;
-  padding: 0;
-  margin: 0;
-}
-
 .contextMenu {
   position: absolute;
   right: 4px;
-  top: 28px;
+  top: 100%;
   background: #F1F5F9;
   border: 1px solid #444;
   border-radius: 4px;
@@ -200,11 +272,21 @@ $file-selected: #d0eaff;
   padding: 6px 10px;
   cursor: pointer;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 12px;
 
   &:hover {
     background: #DBEAFE;
   }
+}
+
+.menuDivider {
+  height: 1px;
+  background: #ddd;
+  margin: 4px 0;
+}
+
+.deleteItem {
+  color: #d32f2f;
 }
 
 // СТИЛИ ДЛЯ INPUT ПРИ РЕДАКТИРОВАНИИ

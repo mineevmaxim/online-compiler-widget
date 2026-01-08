@@ -178,6 +178,11 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
         window.addEventListener('mouseup', onUp);
     };
 
+    const handleMoveFile = (fileId: string, newPath: string) => {
+    // Обновить путь файла в вашем состоянии
+    };
+
+
     return (
         <div
             ref={containerRef}
@@ -229,6 +234,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
                             onAdd={addDocument}
                             onRename={handleRename} // Используем inline-редактирование
                             onDelete={deleteDocument}
+                            onMove={handleMoveFile}
                         />
 
                         <div

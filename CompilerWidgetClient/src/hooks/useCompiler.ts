@@ -88,16 +88,17 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
     };
 
     // В useCompiler.ts обновляем функцию addDocument:
-    const addDocument = (fileName?: string) => {
+    const addDocument = (fileName?: string, path?: string) => {
         // Если передано имя файла - используем его, иначе генерируем
         const defaultName = `file${documents.length + 1}.cs`;
         const finalName = fileName || defaultName;
+        console.log(path)
 
         let fileId = "";
 
         fileApi.apiFilesProjectProjectIdPost(projectId, {
             name: finalName,
-            path: finalName
+            path: path
         })
             .then(res => {
                 fileId = res.data;
@@ -114,9 +115,11 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                     initialContent = "// JavaScript file";
                 }
 
+                const finalPath = path? path : "";
+
                 const newDoc: EditorDocument = {
                     id: fileId,
-                    path: finalName,
+                    path: finalPath,
                     name: finalName,
                     language: language,
                     content: initialContent,
