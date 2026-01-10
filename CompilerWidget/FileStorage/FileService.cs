@@ -218,8 +218,50 @@ public class FileService : IFileService
 			: GetPhysicalFilePath(fileId, file.FileName, extension ?? ToExtension(file.Extension), file.Path);
 	}
 	
+	private string NormalizePath(string path)
+	{
+		if (string.IsNullOrEmpty(path))
+			return path;
+    
+		// Заменяем все обратные слэши на прямые
+		path = path.Replace("\\", "/");
+    
+		// Убираем двойные слэши
+		while (path.Contains("//"))
+		{
+			path = path.Replace("//", "/");
+		}
+    
+		// Убираем последний слэш, если это не корневой путь
+		if (path.Length > 1 && path.EndsWith("/"))
+		{
+			path = path.TrimEnd('/');
+		}
+    
+		return path;
+	}
+
+	public void MoveOneFile(Guid fileId, string newPath)
+	{
+		try
+		{
+			var fullPath = newPath+context.ProjectFiles.Find(fileId).FileName;
+			fullPath = NormalizePath(fullPath);
+			Move(fileId, fullPath);
+		}
+		catch(Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при перемещении файла {FileId} на путь {NewPath}", fileId, newPath);
+			throw;
+		}
+	}
+	
 	public void MoveAllFilesByPaath(Guid projectId, string oldPath, string newPath)
 {
+	
+	oldPath =  NormalizePath(oldPath);
+	newPath =  NormalizePath(newPath);
+	
     try
     {
         // Получаем все файлы, начинающиеся с oldPath

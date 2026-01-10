@@ -50,7 +50,10 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
         setDocumentContent,
         addDocument,
         deleteDocument,
+        updateOneDocPath,
         updateDocument,
+        updateDocPath,
+        updatePath,
         output,
         history,
         run,
@@ -100,6 +103,17 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
         updateDocument(id, {
             name: newName
         });
+    };
+
+    const changeAllDocPath = (oldPath: string, newPath: string) => {
+        updatePath(id, oldPath, newPath);
+    }
+
+    const handleRepath = (id: string, oldPath: string, newPath: string) => {
+        const doc = documents.find(d => d.id === id);
+        updateOneDocPath(id, newPath)
+        if (!doc || newPath === doc.path) return;
+        
     };
 
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -179,7 +193,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
     };
 
     const handleMoveFile = (fileId: string, newPath: string) => {
-    // Обновить путь файла в вашем состоянии
+        updateDocPath(fileId, newPath)
     };
 
 
@@ -235,6 +249,8 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
                             onRename={handleRename} // Используем inline-редактирование
                             onDelete={deleteDocument}
                             onMove={handleMoveFile}
+                            onFolderRename={handleRepath}
+                            changeAllDocPath={changeAllDocPath}
                         />
 
                         <div

@@ -29,15 +29,16 @@ public class FileController(IFileService fileService): Controller
 	[Route("project/{projectId:guid}/change_all_paths")]
 	public ActionResult ChangePath(Guid projectId, [FromBody] PathChangeRequest path)
 	{
+		
 		fileService.MoveAllFilesByPaath(projectId, path.oldPath, path.newPath);
 		return Ok();
 	}
 	
 	[HttpPost]
 	[Route("{fileId:guid}/move")]
-	public ActionResult ChangeOnePath(Guid file, [FromBody] string new_path)
+	public ActionResult ChangeOnePath(Guid fileId, [FromBody] string new_path)
 	{
-		fileService.Move(file, new_path);
+		fileService.MoveOneFile(fileId, new_path);
 		return Ok();
 	}
 

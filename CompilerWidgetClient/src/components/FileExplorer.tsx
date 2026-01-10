@@ -9,10 +9,12 @@ interface FileExplorerProps {
     documents: EditorDocument[];
     selectedId: string | null;
     onSelect: (id: string) => void;
-    onAdd: (fileName: string, parentPath?: string) => void; // Изменено: принимает путь
+    onAdd: (fileName: string, parentPath?: string) => void;
     onRename: (id: string, newName: string) => void;
     onDelete: (id: string) => void;
     onMove: (fileId: string, newPath: string) => void;
+    onFolderRename: (id: string, oldPath: string, newPath: string) => void;
+    changeAllDocPath: (oldPath: string, newPath: string) => void;
 }
 
 // Типы для папок
@@ -70,13 +72,11 @@ const CreateItemModal: React.FC<CreateItemModalProps> = ({
         }
         
         if (isFile) {
-            // Проверяем расширение для файла
             if (!trimmedName.includes('.')) {
                 setError("Добавьте расширение файла (например, .cs, .js, .txt)");
                 return;
             }
             
-            // Проверяем допустимые расширения
             const validExtensions = ['.cs', '.js', '.txt'];
             const hasValidExtension = validExtensions.some(ext => trimmedName.endsWith(ext));
             
@@ -376,50 +376,6 @@ const FileItemComponent: React.FC<FileItemProps> = ({
     );
 };
 
-// Функция для построения дерева из путей
-const buildTreeFromPaths = (folders: Folder[], fileItems: FileItem[]): TreeItem[] => {
-    // Создаем мапу для быстрого доступа к элементам по пути
-    const itemsByPath = new Map<string, TreeItem>();
-    const itemsByParentPath = new Map<string, TreeItem[]>();
-    
-    // Добавляем папки
-    folders.forEach(folder => {
-        itemsByPath.set(folder.path, folder);
-        
-        const parentPath = folder.path.substring(0, folder.path.lastIndexOf('/')) || '/';
-        if (!itemsByParentPath.has(parentPath)) {
-            itemsByParentPath.set(parentPath, []);
-        }
-        itemsByParentPath.get(parentPath)!.push(folder);
-    });
-    
-    // Добавляем файлы
-    fileItems.forEach(file => {
-        itemsByPath.set(file.path, file);
-        
-        const parentPath = file.path.substring(0, file.path.lastIndexOf('/')) || '/';
-        if (!itemsByParentPath.has(parentPath)) {
-            itemsByParentPath.set(parentPath, []);
-        }
-        itemsByParentPath.get(parentPath)!.push(file);
-    });
-    
-    // Рекурсивная функция для построения дерева
-    const buildTreeForPath = (path: string): TreeItem[] => {
-        const items = itemsByParentPath.get(path) || [];
-        
-        // Сортируем: сначала папки, потом файлы по алфавиту
-        return items.sort((a, b) => {
-            if (a.type === 'folder' && b.type !== 'folder') return -1;
-            if (a.type !== 'folder' && b.type === 'folder') return 1;
-            return a.name.localeCompare(b.name);
-        });
-    };
-    
-    // Строим дерево для корня
-    return buildTreeForPath('/');
-};
-
 // Рекурсивный компонент для отображения дерева
 interface TreeViewProps {
     items: TreeItem[];
@@ -502,7 +458,6 @@ const TreeView: React.FC<TreeViewProps> = ({
                             isDragging={draggedItemId === item.id}
                         />
                         
-                        {/* Рекурсивно отображаем детей для развернутых папок */}
                         {isFolder && isExpanded && item.children && (
                             <TreeView
                                 items={item.children}
@@ -536,14 +491,21 @@ const TreeView: React.FC<TreeViewProps> = ({
 };
 
 export const FileExplorer: React.FC<FileExplorerProps> = ({
-    documents,
+    documents: externalDocuments,
     selectedId,
     onSelect,
     onAdd,
     onRename,
     onDelete,
-    onMove
+    onMove,
+    onFolderRename,
+    changeAllDocPath
 }) => {
+    // Локальное состояние для документов (для оптимистичного обновления)
+    const [localDocuments, setLocalDocuments] = useState<EditorDocument[]>(externalDocuments);
+    const [folders, setFolders] = useState<Folder[]>([]);
+    const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+    
     const [menuId, setMenuId] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState("");
@@ -552,216 +514,181 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     const [showCreateMenu, setShowCreateMenu] = useState(false);
     const [currentPathForCreate, setCurrentPathForCreate] = useState<string>("");
     
-    // Состояние для перетаскивания
     const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
     const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
-    
-    // Состояние папок (теперь пустое, папки будут создаваться из документов)
-    const [folders, setFolders] = useState<Folder[]>([]);
-    
-    // Состояние развернутости папок
-    const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
     
     const createMenuRef = useRef<HTMLDivElement | null>(null);
     const addButtonRef = useRef<HTMLButtonElement | null>(null);
 
-    // Закрытие меню при клике вне
+    // Синхронизация с внешними документами
     useEffect(() => {
-        const handler = (e: MouseEvent) => {
-            if (createMenuRef.current && !createMenuRef.current.contains(e.target as Node)) {
-                if (addButtonRef.current && !addButtonRef.current.contains(e.target as Node)) {
-                    setShowCreateMenu(false);
-                }
-            }
-            
-            const target = e.target as Element;
-            const isMoreButton = target.closest(`.${cls.moreBtn}`);
-            const isInContextMenu = target.closest(`.${cls.contextMenu}`);
-            
-            if (!isMoreButton && !isInContextMenu) {
-                setMenuId(null);
-            }
-        };
+        setLocalDocuments(externalDocuments);
+    }, [externalDocuments]);
 
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
-    }, []);
 
-    // Функция для нормализации пути (добавляет / в конце если не пустой)
-    const normalizePath = (path: string): string => {
+    const normalizePath = useCallback((path: string): string => {
     if (!path) return '';
     
-    // Заменяем обратные слеши на обычные
-    let normalized = path.replace(/\\/g, '/');
-    
-    // Убираем начальный слеш если есть
+    let normalized = path.replace(/\\/g, '/').replace(/\/+/g, '/');
     normalized = normalized.startsWith('/') ? normalized.substring(1) : normalized;
     
-    // Если путь уже заканчивается на /, возвращаем как есть
-    if (normalized.endsWith('/')) return normalized;
-    
-    // Если путь пустой после нормализации, возвращаем пустую строку
-    if (!normalized) return '';
-    
-    // Для папок добавляем / в конец, для файлов - нет
-    return normalized;
-};
-
-    // Функция для получения пути папки из полного пути
-const getFolderPath = (fullPath: string): string => {
-    const normalized = normalizePath(fullPath);
-    const lastSlashIndex = normalized.lastIndexOf('/');
-    
-    if (lastSlashIndex === -1) {
-        return ''; // Файл в корне
+    if (normalized && !normalized.endsWith('/') && !path.includes('.')) {
+        normalized += '/';
     }
     
-    return normalized.substring(0, lastSlashIndex + 1);
-};
+    return normalized;
+}, []);
 
-const isFolderPath = (path: string): boolean => {
-    return path.endsWith('/');
-};
+    // Функция для получения пути папки из полного пути
+    const getFolderPath = useCallback((fullPath: string): string => {
+        const normalized = normalizePath(fullPath);
+        const lastSlashIndex = normalized.lastIndexOf('/');
+        
+        if (lastSlashIndex === -1) {
+            return '';
+        }
+        
+        return normalized.substring(0, lastSlashIndex + 1);
+    }, [normalizePath]);
 
     // Создаем папки на основе путей из документов
     const allFolders = useMemo(() => {
-    const folderSet = new Map<string, Folder>();
-    
-    // Добавляем папки из состояния (созданные пользователем)
-    folders.forEach(folder => {
-        const normalizedPath = normalizePath(folder.path);
-        folderSet.set(normalizedPath, { ...folder, path: normalizedPath });
-    });
-    
-    // Собираем все уникальные пути папок из документов
-    const folderPaths = new Set<string>();
-    
-    documents.forEach(doc => {
-        if (doc.path) {
-            // Получаем путь папки из пути документа
-            const folderPath = getFolderPath(doc.path);
-            if (folderPath) {
-                folderPaths.add(folderPath);
-                
-                // Создаем все родительские папки
-                let currentPath = '';
-                const parts = folderPath.split('/').filter(Boolean);
-                
-                for (let i = 0; i < parts.length; i++) {
-                    currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
-                    const parentFolderPath = `${currentPath}/`;
+
+        
+        const folderSet = new Map<string, Folder>();
+        
+        // Добавляем пользовательские папки
+        folders.forEach(folder => {
+            const normalizedPath = normalizePath(folder.path);
+            folderSet.set(normalizedPath, { ...folder, path: normalizedPath });
+        });
+        
+        // Добавляем папки из путей документов
+        const folderPaths = new Set<string>();
+        
+        localDocuments.forEach(doc => {
+            if (doc.path) {
+                const folderPath = getFolderPath(doc.path);
+                if (folderPath) {
+                    folderPaths.add(folderPath);
                     
-                    if (!folderSet.has(parentFolderPath)) {
-                        folderSet.set(parentFolderPath, {
-                            id: `folder-auto-${parentFolderPath}`,
-                            name: parts[i],
-                            type: 'folder' as const,
-                            path: parentFolderPath,
-                            isExpanded: expandedFolders.has(parentFolderPath)
-                        });
+                    // Создаем все родительские папки
+                    let currentPath = '';
+                    const parts = folderPath.split('/').filter(Boolean);
+                    
+                    for (let i = 0; i < parts.length; i++) {
+                        currentPath = currentPath ? `${currentPath}/${parts[i]}` : parts[i];
+                        const parentFolderPath = `${currentPath}/`;
+                        
+                        if (!folderSet.has(parentFolderPath)) {
+                            folderSet.set(parentFolderPath, {
+                                id: `folder-auto-${parentFolderPath}`,
+                                name: parts[i],
+                                type: 'folder' as const,
+                                path: parentFolderPath,
+                                isExpanded: expandedFolders.has(parentFolderPath)
+                            });
+                        }
                     }
                 }
             }
-        }
-    });
-    
-    return Array.from(folderSet.values());
-}, [folders, documents, expandedFolders]);
+        });
+        
+        const result = Array.from(folderSet.values());
+        return result;
+    }, [folders, localDocuments, expandedFolders, normalizePath, getFolderPath]);
 
     // Преобразуем документы в формат файлов для дерева
-    const fileItems: FileItem[] = useMemo(() => 
-    documents.map(doc => {
-        // Нормализуем путь
-        const normalizedPath = normalizePath(doc.path);
-        // Полный путь к файлу
-        const fullPath = normalizedPath ? 
-            `${normalizedPath}/${doc.name}` : 
-            doc.name;
-        
-        return {
-            id: doc.id,
-            name: doc.name,
-            type: 'file' as const,
-            path: fullPath,
-            modified: doc.modified
-        };
-    }), 
-[documents]);
+    const fileItems: FileItem[] = useMemo(() => {
+        const result = localDocuments.map(doc => {
+            const normalizedPath = normalizePath(doc.path);
+            const fullPath = normalizedPath ? 
+                `${normalizedPath}/${doc.name}` : 
+                doc.name;
+            
+            return {
+                id: doc.id,
+                name: doc.name,
+                type: 'file' as const,
+                path: fullPath,
+                modified: doc.modified
+            };
+        });
+        return result;
+    }, [localDocuments, normalizePath]);
 
     // Строим дерево из путей
     const treeItems = useMemo(() => {
-    // Создаем мапу всех элементов по их пути
-    const allItemsMap = new Map<string, TreeItem>();
+    console.log('=== treeItems BUILD ===');
+    console.log('fileItems sample:', fileItems.slice(0, 3));
     
-    // Добавляем папки с пустым массивом детей
+    const itemsByPath = new Map<string, TreeItem>();
+    
+    // 1. Папки
     allFolders.forEach(folder => {
-        allItemsMap.set(folder.path, { 
-            ...folder, 
-            children: [] 
-        });
+        itemsByPath.set(folder.path, { ...folder, children: [] });
     });
     
-    // Добавляем файлы
+    // 2. Файлы
     fileItems.forEach(file => {
-        allItemsMap.set(file.path, file);
+        itemsByPath.set(file.path, file);
     });
     
-    // Создаем дерево
     const itemsByParentPath = new Map<string, TreeItem[]>();
     
-    // Собираем все элементы по родительским путям
-    Array.from(allItemsMap.values()).forEach(item => {
-        // Определяем родительский путь
+    Array.from(itemsByPath.values()).forEach(item => {
         let parentPath = '';
         
         if (item.type === 'file') {
-            // Для файла: родительский путь - это путь папки
-            parentPath = getFolderPath(item.path);
+            // ✅ ФИКС: нормализуем двойные слеши
+            const normalizedPath = normalizePath(item.path);
+            const lastSlashIndex = normalizedPath.lastIndexOf('/');
+            parentPath = lastSlashIndex === -1 ? '' : normalizedPath.substring(0, lastSlashIndex + 1);
         } else {
-            // Для папки: родительский путь - это путь до предпоследнего /
-            const folderPath = item.path;
-            if (folderPath !== '/') {
-                const parts = folderPath.split('/').filter(Boolean);
-                if (parts.length > 1) {
-                    parts.pop(); // Убираем последнюю часть (имя текущей папки)
-                    parentPath = parts.join('/') + '/';
-                }
+            // Для папки
+            const normalizedParent = normalizePath(item.path);
+            const parts = normalizedParent.split('/').filter(Boolean);
+            if (parts.length > 1) {
+                parts.pop();
+                parentPath = parts.join('/') + '/';
+            } else {
+                parentPath = '';
             }
         }
+        
+        console.log(`${item.type} ${item.name}: ${item.path} -> parent: "${parentPath}"`);
         
         if (!itemsByParentPath.has(parentPath)) {
             itemsByParentPath.set(parentPath, []);
         }
-        
         itemsByParentPath.get(parentPath)!.push(item);
     });
     
-    // Рекурсивная функция для построения дерева с детьми
     const buildTree = (parentPath: string): TreeItem[] => {
         const items = itemsByParentPath.get(parentPath) || [];
-        
-        // Сортируем: сначала папки, потом файлы
         const sortedItems = items.sort((a, b) => {
             if (a.type === 'folder' && b.type !== 'folder') return -1;
             if (a.type !== 'folder' && b.type === 'folder') return 1;
             return a.name.localeCompare(b.name);
         });
         
-        // Для каждого элемента добавляем детей
         return sortedItems.map(item => {
             if (item.type === 'folder') {
-                const folderItem = item as Folder;
                 return {
-                    ...folderItem,
-                    children: buildTree(folderItem.path)
+                    ...item,
+                    children: buildTree(item.path)
                 };
             }
             return item;
         });
     };
     
-    return buildTree(''); // Корневой путь
-}, [allFolders, fileItems]);
+    const result = buildTree('');
+    console.log('FINAL treeItems:', result);
+    return result;
+}, [allFolders, fileItems, normalizePath]);
+
+
 
     const handleStartRename = useCallback((id: string, currentName: string) => {
         setMenuId(null);
@@ -770,41 +697,99 @@ const isFolderPath = (path: string): boolean => {
     }, []);
 
     const handleSaveRename = useCallback((id: string, newName: string) => {
+        
         if (newName.trim()) {
-            // Проверяем, папка это или файл
-            const isFolder = allFolders.some(f => f.id === id);
-            if (isFolder) {
-                const folder = allFolders.find(f => f.id === id);
-                if (folder) {
-                    // Обновляем путь папки
-                    const oldPath = folder.path;
-                    const parentPath = oldPath.substring(0, oldPath.lastIndexOf('/', oldPath.length - 2)) || '';
-                    const newPath = parentPath ? `${parentPath}/${newName.trim()}/` : `${newName.trim()}/`;
-                    
-                    // Обновляем папку в состоянии
+            const folder = allFolders.find(f => f.id === id);
+            
+            if (folder) {
+                const oldPath = folder.path;
+                let parentPath = '';
+                const parts = oldPath.split('/').filter(Boolean);
+                
+                if (parts.length > 1) {
+                    parts.pop();
+                    parentPath = parts.join('/') + '/';
+                }
+                
+                const newPath = parentPath + newName.trim() + '/';
+                
+                // Обновляем пользовательскую папку
+                const isUserFolder = folders.some(f => f.id === id);
+                
+                if (isUserFolder) {
                     setFolders(prev => prev.map(f => 
                         f.id === id 
                             ? { ...f, name: newName.trim(), path: newPath }
                             : f
                     ));
-                    
-                    // Обновляем состояние развернутости
-                    if (expandedFolders.has(oldPath)) {
-                        setExpandedFolders(prev => {
-                            const newSet = new Set(prev);
-                            newSet.delete(oldPath);
-                            newSet.add(newPath);
-                            return newSet;
-                        });
-                    }
+                } else {
+                    const newFolder: Folder = {
+                        id: `folder-${Date.now()}`,
+                        name: newName.trim(),
+                        type: 'folder',
+                        path: newPath,
+                        isExpanded: folder.isExpanded
+                    };
+                    setFolders(prev => [...prev, newFolder]);
                 }
+                
+                // Обновляем состояние развернутости
+                if (expandedFolders.has(oldPath)) {
+                    setExpandedFolders(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(oldPath);
+                        newSet.add(newPath);
+                        return newSet;
+                    });
+                }
+                
+                // Обновляем пути вложенных папок
+                const childFolders = allFolders.filter(f => 
+                    f.id !== id && f.path.startsWith(oldPath)
+                );
+                
+                if (childFolders.length > 0) {
+                    setFolders(prev => prev.map(f => {
+                        if (f.path.startsWith(oldPath) && f.id !== id) {
+                            const newChildPath = f.path.replace(oldPath, newPath);
+                            return { ...f, path: newChildPath };
+                        }
+                        return f;
+                    }));
+                }
+                
+                // Обновляем пути вложенных файлов
+                const childFiles = fileItems.filter(file => 
+                    file.path.startsWith(oldPath)
+                );
+                
+                changeAllDocPath(oldPath, newPath);
+                
+                childFiles.forEach(file => {
+                    const newFilePath = file.path.replace(oldPath, newPath);
+                    const doc = localDocuments.find(d => d.id === file.id);
+                    if (doc) {
+                        doc.path = newPath;  // Мутация для простоты, или создайте новый объект
+                        doc.modified = true;
+                    }
+                    onFolderRename(file.id, file.path, newFilePath);
+                });
+                setLocalDocuments([...localDocuments]);
+                
             } else {
+                // Это файл
+                setLocalDocuments(prev => prev.map(doc => 
+                    doc.id === id 
+                        ? { ...doc, name: newName.trim(), modified: true }
+                        : doc
+                ));
                 onRename(id, newName.trim());
             }
         }
+        
         setEditingId(null);
         setEditName("");
-    }, [allFolders, onRename, expandedFolders]);
+    }, [allFolders, folders, expandedFolders, fileItems, changeAllDocPath, onFolderRename, onRename]);
 
     const handleCancelRename = useCallback(() => {
         setEditingId(null);
@@ -819,7 +804,6 @@ const isFolderPath = (path: string): boolean => {
             } else {
                 newSet.add(path);
             }
-            console.log(documents)
             return newSet;
         });
     }, []);
@@ -829,9 +813,7 @@ const isFolderPath = (path: string): boolean => {
         if (isFolder) {
             const folder = allFolders.find(f => f.id === id);
             if (folder) {
-                // Удаляем папку из состояния
                 setFolders(prev => prev.filter(f => f.id !== id));
-                // Удаляем из развернутых
                 setExpandedFolders(prev => {
                     const newSet = new Set(prev);
                     newSet.delete(folder.path);
@@ -839,40 +821,39 @@ const isFolderPath = (path: string): boolean => {
                 });
             }
         } else {
+            // Удаляем из локального состояния
+            setLocalDocuments(prev => prev.filter(doc => doc.id !== id));
             onDelete(id);
         }
         setMenuId(null);
     }, [allFolders, onDelete]);
 
     const handleAddItem = (itemName: string, itemType: 'file' | 'folder') => {
-    if (itemType === 'file') {
-        // Для файла передаем имя и нормализованный путь
-        const folderPath = normalizePath(currentPathForCreate);
-        onAdd(itemName, folderPath);
-    } else {
-        // Для папки создаем новый объект с нормализованным путем
-        const normalizedCurrentPath = normalizePath(currentPathForCreate);
-        const folderPath = normalizedCurrentPath ? 
-            `${normalizedCurrentPath}/${itemName}/` : 
-            `${itemName}/`;
+        if (itemType === 'file') {
+            const folderPath = normalizePath(currentPathForCreate);
+            onAdd(itemName, folderPath);
+        } else {
+            const normalizedCurrentPath = normalizePath(currentPathForCreate);
+            const folderPath = normalizedCurrentPath ? 
+                `${normalizedCurrentPath}/${itemName}/` : 
+                `${itemName}/`;
+            
+            const newFolder: Folder = {
+                id: `folder-${Date.now()}`,
+                name: itemName,
+                type: 'folder',
+                path: folderPath,
+                isExpanded: false
+            };
+            
+            setFolders(prev => [...prev, newFolder]);
+            setExpandedFolders(prev => new Set([...prev, folderPath]));
+        }
         
-        const newFolder: Folder = {
-            id: `folder-${Date.now()}`,
-            name: itemName,
-            type: 'folder',
-            path: folderPath,
-            isExpanded: false
-        };
-        
-        setFolders(prev => [...prev, newFolder]);
-        // Автоматически разворачиваем новую папку
-        setExpandedFolders(prev => new Set([...prev, folderPath]));
-    }
-    
-    setShowCreateModal(false);
-    setCreateModalType(null);
-    setCurrentPathForCreate("");
-};
+        setShowCreateModal(false);
+        setCreateModalType(null);
+        setCurrentPathForCreate("");
+    };
 
     const handleCreateMenuSelect = (type: 'file' | 'folder', itemId?: string, path?: string) => {
         setCreateModalType(type);
@@ -886,7 +867,6 @@ const isFolderPath = (path: string): boolean => {
         setEditName(name);
     }, []);
 
-    // Обработчики для перетаскивания
     const handleDragStart = useCallback((e: React.DragEvent, itemId: string, itemType: 'file' | 'folder') => {
         if (itemType !== 'file') return;
         
@@ -911,38 +891,21 @@ const isFolderPath = (path: string): boolean => {
         e.dataTransfer.dropEffect = 'move';
     }, [allFolders, dragOverItemId]);
 
+    
+
     const handleDrop = useCallback((e: React.DragEvent, folderId: string) => {
-        e.preventDefault();
-        const draggedFileId = e.dataTransfer.getData('text/plain');
+    e.preventDefault();
+    const draggedFileId = e.dataTransfer.getData('text/plain');
+    const targetFolder = allFolders.find(f => f.id === folderId);
+    
+    if (!draggedFileId || !targetFolder) return;
         
-        if (!draggedFileId || draggedFileId === folderId) {
-            setDragOverItemId(null);
-            setDraggedItemId(null);
-            return;
-        }
-        
-        const targetFolder = allFolders.find(f => f.id === folderId);
-        const draggedFile = documents.find(d => d.id === draggedFileId);
-        
-        if (targetFolder && draggedFile) {
-            // Вызываем onMove с нормализованным путем к папке
-            onMove(draggedFileId, targetFolder.path);
-            
-            // Разворачиваем папку, если она была свернута
-            if (!expandedFolders.has(targetFolder.path)) {
-                setExpandedFolders(prev => new Set([...prev, targetFolder.path]));
-            }
-        }
-        
-        setDragOverItemId(null);
-        setDraggedItemId(null);
-        
-        document.querySelectorAll(`.${cls.dragging}`).forEach(el => {
-            if (el && el.classList) {
-                el.classList.remove(cls.dragging);
-            }
-        });
-    }, [allFolders, documents, onMove, expandedFolders]);
+    // ✅ Локальное обновление + родитель
+    onMove(draggedFileId, targetFolder.path);  // Только это!
+    
+    setDragOverItemId(null);
+    setDraggedItemId(null);
+}, [allFolders, onMove]);
 
     const handleDragEnd = useCallback(() => {
         setDraggedItemId(null);
@@ -966,7 +929,30 @@ const isFolderPath = (path: string): boolean => {
         };
     }, [handleDragEnd]);
 
-    console.log(allFolders)
+    // Закрытие меню при клике вне
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (createMenuRef.current && !createMenuRef.current.contains(e.target as Node)) {
+                if (addButtonRef.current && !addButtonRef.current.contains(e.target as Node)) {
+                    setShowCreateMenu(false);
+                }
+            }
+            
+            const target = e.target as Element;
+            const isMoreButton = target.closest(`.${cls.moreBtn}`);
+            const isInContextMenu = target.closest(`.${cls.contextMenu}`);
+            
+            if (!isMoreButton && !isInContextMenu) {
+                setMenuId(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, []);
+
+    // Добавим отладку для рендера
+
 
     return (
         <div 

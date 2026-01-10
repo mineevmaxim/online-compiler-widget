@@ -985,6 +985,7 @@ export class FileApi extends BaseAPI {
      * @throws {RequiredError}
      */
     public apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig) {
+        console.log(fileId)
         return FileApiFp(this.configuration).apiFilesFileIdMovePost(fileId, file, body, options).then((request) => request(this.axios, this.basePath));
     }
 

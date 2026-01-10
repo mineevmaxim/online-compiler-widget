@@ -17,6 +17,8 @@ public interface IFileService
 	public void Move(Guid fileId, string newPath);
 
 	public void MoveAllFilesByPaath(Guid projectId, string oldPath, string newPath);
+	
+	public void MoveOneFile(Guid fileId, string newPath);
 
 	/// <summary>
 	/// Удаляет файл

@@ -1,4 +1,4 @@
-import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_FORM_ACTIONS, useEffect, useLayoutEffect, useState } from "react";
+import {useEffect, useLayoutEffect, useState } from "react";
 import type { EditorDocument } from "../types/EditorDocument";
 import { FileApi, ProjectApi, CompilerApi } from "../api";
 
@@ -20,7 +20,7 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         if (projectId && initialFiles && !isInitialized && needToCreateFiles) {
             setDocuments([]);
             Object.keys(initialFiles).forEach(key => {
-                console.log(key, initialFiles[key]);
+                
 
                 fileApi.apiFilesProjectProjectIdPost(projectId, {
                     name: key,
@@ -38,7 +38,7 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                     fileApi.apiFilesFileIdSavePost(file.id, {
                         content: initialFiles[key],
                     })
-                        .then(res => console.log(res))
+                        
                 })
                     .finally(() => setIsInitialized(true));
             });
@@ -51,7 +51,7 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
             fileApi.apiFilesProjectIdGet(projectId)
                 .then((files) => {
                     files.data.forEach(file => {
-                        console.log(file.fileName, file.fileId);
+                        
 
                         fileApi.apiFilesReadFileIdGet(file.fileId!).then(res => {
                             const document: EditorDocument = {
@@ -92,7 +92,6 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         // Если передано имя файла - используем его, иначе генерируем
         const defaultName = `file${documents.length + 1}.cs`;
         const finalName = fileName || defaultName;
-        console.log(path)
 
         let fileId = "";
 
@@ -139,6 +138,36 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                 alert(`Ошибка при создании файла: ${err.message}`);
             });
     };
+
+    const updateDocPath = (fileId: string, newPath: string) => {
+    setDocuments(prev => {
+        const newDocs = prev.map(doc => 
+            doc.id === fileId ? { ...doc, path: newPath, modified: true } : doc
+        );
+        return newDocs;
+    });
+    fileApi.apiFilesFileIdMovePost(fileId, undefined, newPath);
+};
+
+
+    const updateOneDocPath = (id: string, newPath: string) => {
+        setDocuments(docs =>
+            docs.map(doc => doc.id === id ? { ...doc, path: newPath, modified: true } : doc)
+        )
+    }
+
+    const updatePath = (id: string, oldPath: string, newPath: string) => {
+        setDocuments(prevDocs =>
+        prevDocs.map(doc => {
+            if (doc.path?.startsWith(oldPath)) {
+                const newDocPath = doc.path.replace(oldPath, newPath);
+                return { ...doc, path: newDocPath, modified: true };
+            }
+            return doc;
+        })
+    );
+        fileApi.apiFilesProjectProjectIdChangeAllPathsPost(id, {oldPath, newPath})
+    }
 
     const updateDocument = (id: string, patch: Partial<EditorDocument>) => {
         const doc = documents.find(d => d.id === id);
@@ -240,8 +269,11 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         setSelectedId,
         setDocumentContent,
         addDocument,
+        updatePath,
+        updateDocPath,
         updateDocument,
         deleteDocument,
+        updateOneDocPath,
         run,
         stop,
         output,
