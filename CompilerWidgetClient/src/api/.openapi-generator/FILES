@@ -12,6 +12,7 @@ docs/CreateFileDto.md
 docs/CreateProjectRequest.md
 docs/FileApi.md
 docs/FileMetadata.md
+docs/PathChangeRequest.md
 docs/ProcessStatus.md
 docs/ProjectApi.md
 docs/ProjectInfo.md

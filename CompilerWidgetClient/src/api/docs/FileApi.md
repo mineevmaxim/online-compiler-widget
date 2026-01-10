@@ -5,9 +5,11 @@ All URIs are relative to *http://localhost*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**apiFilesFileIdDeletePost**](#apifilesfileiddeletepost) | **POST** /api/files/{fileId}/delete | |
+|[**apiFilesFileIdMovePost**](#apifilesfileidmovepost) | **POST** /api/files/{fileId}/move | |
 |[**apiFilesFileIdRenamePost**](#apifilesfileidrenamepost) | **POST** /api/files/{fileId}/rename | |
 |[**apiFilesFileIdSavePost**](#apifilesfileidsavepost) | **POST** /api/files/{fileId}/save | |
 |[**apiFilesProjectIdGet**](#apifilesprojectidget) | **GET** /api/files/{projectId} | |
+|[**apiFilesProjectProjectIdChangeAllPathsPost**](#apifilesprojectprojectidchangeallpathspost) | **POST** /api/files/project/{projectId}/change_all_paths | |
 |[**apiFilesProjectProjectIdPost**](#apifilesprojectprojectidpost) | **POST** /api/files/project/{projectId} | |
 |[**apiFilesReadFileIdGet**](#apifilesreadfileidget) | **GET** /api/files/read/{fileId} | |
 
@@ -51,6 +53,62 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiFilesFileIdMovePost**
+> apiFilesFileIdMovePost()
+
+
+### Example
+
+```typescript
+import {
+    FileApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new FileApi(configuration);
+
+let fileId: string; // (default to undefined)
+let file: string; // (optional) (default to undefined)
+let body: string; // (optional)
+
+const { status, data } = await apiInstance.apiFilesFileIdMovePost(
+    fileId,
+    file,
+    body
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **body** | **string**|  | |
+| **fileId** | [**string**] |  | defaults to undefined|
+| **file** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, text/json, application/*+json
  - **Accept**: Not defined
 
 
@@ -210,6 +268,60 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: text/plain, application/json, text/json
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **apiFilesProjectProjectIdChangeAllPathsPost**
+> apiFilesProjectProjectIdChangeAllPathsPost()
+
+
+### Example
+
+```typescript
+import {
+    FileApi,
+    Configuration,
+    PathChangeRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new FileApi(configuration);
+
+let projectId: string; // (default to undefined)
+let pathChangeRequest: PathChangeRequest; // (optional)
+
+const { status, data } = await apiInstance.apiFilesProjectProjectIdChangeAllPathsPost(
+    projectId,
+    pathChangeRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **pathChangeRequest** | **PathChangeRequest**|  | |
+| **projectId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json, text/json, application/*+json
+ - **Accept**: Not defined
 
 
 ### HTTP response details

@@ -55,6 +55,10 @@ export interface FileMetadata {
     'physicalPath'?: string | null;
     'existsOnDisk'?: boolean;
 }
+export interface PathChangeRequest {
+    'oldPath'?: string | null;
+    'newPath'?: string | null;
+}
 export interface ProcessStatus {
     'projectId'?: string;
     'isRunning'?: boolean;
@@ -504,6 +508,48 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @param {string} fileId 
+         * @param {string} [file] 
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiFilesFileIdMovePost: async (fileId: string, file?: string, body?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'fileId' is not null or undefined
+            assertParamExists('apiFilesFileIdMovePost', 'fileId', fileId)
+            const localVarPath = `/api/files/{fileId}/move`
+                .replace(`{${"fileId"}}`, encodeURIComponent(String(fileId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (file !== undefined) {
+                localVarQueryParameter['file'] = file;
+            }
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(body, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} fileId 
          * @param {RenameFileDto} [renameFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -611,6 +657,43 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @param {string} projectId 
+         * @param {PathChangeRequest} [pathChangeRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiFilesProjectProjectIdChangeAllPathsPost: async (projectId: string, pathChangeRequest?: PathChangeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiFilesProjectProjectIdChangeAllPathsPost', 'projectId', projectId)
+            const localVarPath = `/api/files/project/{projectId}/change_all_paths`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(pathChangeRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} projectId 
          * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -702,6 +785,20 @@ export const FileApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} fileId 
+         * @param {string} [file] 
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesFileIdMovePost(fileId, file, body, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesFileIdMovePost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} fileId 
          * @param {RenameFileDto} [renameFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -735,6 +832,19 @@ export const FileApiFp = function(configuration?: Configuration) {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectIdGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesProjectIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} projectId 
+         * @param {PathChangeRequest} [pathChangeRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiFilesProjectProjectIdChangeAllPathsPost(projectId: string, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectProjectIdChangeAllPathsPost(projectId, pathChangeRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesProjectProjectIdChangeAllPathsPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -783,6 +893,17 @@ export const FileApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @param {string} fileId 
+         * @param {string} [file] 
+         * @param {string} [body] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiFilesFileIdMovePost(fileId, file, body, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} fileId 
          * @param {RenameFileDto} [renameFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -808,6 +929,16 @@ export const FileApiFactory = function (configuration?: Configuration, basePath?
          */
         apiFilesProjectIdGet(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<FileMetadata>> {
             return localVarFp.apiFilesProjectIdGet(projectId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} projectId 
+         * @param {PathChangeRequest} [pathChangeRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiFilesProjectProjectIdChangeAllPathsPost(projectId: string, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiFilesProjectProjectIdChangeAllPathsPost(projectId, pathChangeRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -848,6 +979,18 @@ export class FileApi extends BaseAPI {
     /**
      * 
      * @param {string} fileId 
+     * @param {string} [file] 
+     * @param {string} [body] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig) {
+        return FileApiFp(this.configuration).apiFilesFileIdMovePost(fileId, file, body, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} fileId 
      * @param {RenameFileDto} [renameFileDto] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -875,6 +1018,17 @@ export class FileApi extends BaseAPI {
      */
     public apiFilesProjectIdGet(projectId: string, options?: RawAxiosRequestConfig) {
         return FileApiFp(this.configuration).apiFilesProjectIdGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} projectId 
+     * @param {PathChangeRequest} [pathChangeRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiFilesProjectProjectIdChangeAllPathsPost(projectId: string, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig) {
+        return FileApiFp(this.configuration).apiFilesProjectProjectIdChangeAllPathsPost(projectId, pathChangeRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
