@@ -224,18 +224,18 @@ public class FileService : IFileService
 			return path;
     
 		// Заменяем все обратные слэши на прямые
-		path = path.Replace("\\", "/");
+		path = path.Replace("/", "\\");
     
 		// Убираем двойные слэши
-		while (path.Contains("//"))
+		while (path.Contains("\\\\"))
 		{
-			path = path.Replace("//", "/");
+			path = path.Replace("\\\\", "\\");
 		}
     
 		// Убираем последний слэш, если это не корневой путь
-		if (path.Length > 1 && path.EndsWith("/"))
+		if (path.Length > 1 && path.EndsWith("\\"))
 		{
-			path = path.TrimEnd('/');
+			path = path.TrimEnd('\\');
 		}
     
 		return path;
