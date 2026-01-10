@@ -1,4 +1,5 @@
-﻿using CompilerWidgetApi.Models;
+﻿using CompilerWidgetApi.Dto;
+using CompilerWidgetApi.Models;
 using FileStorage;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,6 +24,22 @@ public class FileController(IFileService fileService): Controller
 		fileService.Rename(fileId, renameFileDto.Name ?? "emptyName");
 		return Ok(fileId);
 	}
+	
+	[HttpPost]
+	[Route("project/{projectId:guid}/change_all_paths")]
+	public ActionResult ChangePath(Guid projectId, [FromBody] PathChangeRequest path)
+	{
+		fileService.MoveAllFilesByPaath(projectId, path.oldPath, path.newPath);
+		return Ok();
+	}
+	
+	[HttpPost]
+	[Route("{fileId:guid}/move")]
+	public ActionResult ChangeOnePath(Guid file, [FromBody] string new_path)
+	{
+		fileService.Move(file, new_path);
+		return Ok();
+	}
 
 	[HttpPost]
 	[Route("{fileId:guid}/delete")]
@@ -39,7 +56,8 @@ public class FileController(IFileService fileService): Controller
 		var result = fileService.Create(createFileDto.Name, projectId, createFileDto.Path);
 		return Ok(result);
 	}
-
+	
+	
 	[HttpGet]
 	[Route("read/{fileId:guid}")]
 	public ActionResult<string> GetFile([FromRoute]Guid fileId)

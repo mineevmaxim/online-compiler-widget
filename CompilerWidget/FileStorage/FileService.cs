@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace FileStorage;
 
@@ -216,6 +217,64 @@ public class FileService : IFileService
 			? throw new FileNotFoundException($"Файл с ID {fileId} не найден в БД")
 			: GetPhysicalFilePath(fileId, file.FileName, extension ?? ToExtension(file.Extension), file.Path);
 	}
+	
+	public void MoveAllFilesByPaath(Guid projectId, string oldPath, string newPath)
+{
+    try
+    {
+        // Получаем все файлы, начинающиеся с oldPath
+        var files = context.ProjectFiles
+            .Where(f => f.ProjectId == projectId && f.Path.StartsWith(oldPath))
+            .ToList();
+        
+        // Обрабатываем каждый файл
+        foreach (var file in files)
+        {
+            try
+            {
+                // Получаем относительную часть пути (после oldPath)
+                string relativePath = file.Path.Substring(oldPath.Length);
+                
+                // Убираем начальный слэш, если есть
+                if (relativePath.StartsWith("/"))
+                    relativePath = relativePath.Substring(1);
+                
+                // Создаем новый путь: newPath + относительная часть
+                string finalNewPath;
+                if (string.IsNullOrEmpty(relativePath))
+                {
+                    // Если файл был непосредственно в oldPath
+                    finalNewPath = newPath;
+                }
+                else
+                {
+                    // Соединяем новый путь и относительную часть
+                    finalNewPath = $"{newPath.TrimEnd('/')}/{relativePath}";
+                }
+                
+                // Получаем полный путь для файла (путь + имя файла)
+                string fullNewPath = $"{finalNewPath.TrimEnd('/')}/{file.FileName}";
+                
+                // Вызываем метод Move для перемещения файла
+                Move(file.FileId, fullNewPath);
+                
+                logger.LogInformation("Файл {FileName} перемещен из {OldPath} в {NewPath}", 
+                    file.FileName, file.Path, finalNewPath);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ошибка при обработке файла {FileId}", file.FileId);
+                // Продолжаем обработку остальных файлов даже если один не удался
+            }
+        }
+        
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Ошибка в GetFilesByPath для проекта {ProjectId}", projectId);
+        throw;
+    }
+}
 
 	public void Move(Guid fileId, string newPath)
 	{

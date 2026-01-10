@@ -16,6 +16,8 @@ public interface IFileService
 	/// <param name="newPath"></param>
 	public void Move(Guid fileId, string newPath);
 
+	public void MoveAllFilesByPaath(Guid projectId, string oldPath, string newPath);
+
 	/// <summary>
 	/// Удаляет файл
 	/// </summary>
@@ -44,6 +46,8 @@ public interface IFileService
 	/// <param name="path"></param>
 	/// <returns></returns>
 	public string Read(string path);
+	
+	
 	
 	FileMetadata? GetFileInfo(Guid fileId);
 	IEnumerable<FileMetadata> GetProjectFiles(Guid projectId);
