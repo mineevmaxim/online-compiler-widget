@@ -89,6 +89,11 @@ public class CompilerController : ControllerBase
 				return NotFound(new { Error = "Проект не запущен" });
 			}
 
+			// ✅ НОВОЕ: Останавливаем реальный процесс dotnet run
+			CompilerService.StopProcess(processInfo.ProcessId);
+			logger.LogInformation("Процесс {ProcessId} остановлен", processInfo.ProcessId);
+
+			// Очистка временной директории
 			try
 			{
 				if (Directory.Exists(processInfo.TempDirectory))
@@ -104,12 +109,13 @@ public class CompilerController : ControllerBase
 
 			RunningProcesses.Remove(projectId);
 
-			logger.LogInformation("Проект {ProjectId} остановлен", projectId);
+			logger.LogInformation("Проект {ProjectId} остановлен полностью", projectId);
 
 			return Ok(new
 			{
 				Message = "Проект остановлен",
 				ProjectId = projectId,
+				ProcessId = processInfo.ProcessId,
 				StoppedAt = DateTime.UtcNow
 			});
 		}
@@ -119,6 +125,7 @@ public class CompilerController : ControllerBase
 			return StatusCode(500, new { Error = ex.Message });
 		}
 	}
+
 
 	[HttpGet("project/{projectId:guid}/status")]
 	public ActionResult<ProcessStatus> GetStatus(Guid projectId)

@@ -11,6 +11,7 @@ public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 {
 	private readonly List<string> tempDirectories = [];
 	private const int TimeoutSeconds = 30;
+	private static readonly Dictionary<string, Process> ActiveRunProcesses = new();
 
 	public async Task<CompilationResult> RunCompilerContainer(string sourcePath, string mainFile)
 	{
@@ -49,11 +50,13 @@ public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 			}
 
 			logger.LogInformation("Запуск проекта...");
+			var processId = Guid.NewGuid().ToString();
 			var runResult = await ExecuteDotnetCommand(
 				"run",
 				$"\"{projectPath}\" --no-build --verbosity quiet --configuration Release",
 				tempDir,
-				TimeSpan.FromSeconds(TimeoutSeconds));
+				TimeSpan.FromSeconds(TimeoutSeconds),
+				processId);
 
 			return new CompilationResult
 			{
@@ -251,12 +254,26 @@ public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 			};
 		}
 	}
+	
+	public static void StopProcess(string processId)
+	{
+		if (ActiveRunProcesses.TryGetValue(processId, out var process) && !process.HasExited)
+		{
+			try
+			{
+				process.Kill(true);
+				ActiveRunProcesses.Remove(processId);
+			}
+			catch { /* ignore */ }
+		}
+	}
 
 	private async Task<(bool Success, string Output, int ExitCode)> ExecuteDotnetCommand(
 		string command,
 		string arguments,
 		string workingDirectory,
-		TimeSpan timeout)
+		TimeSpan timeout,
+		string? processId = null)
 	{
 		try
 		{
@@ -295,6 +312,11 @@ public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 
 			if (!process.Start())
 				return (false, "Не удалось запустить процесс dotnet", 1);
+			
+			if (!string.IsNullOrEmpty(processId) && command == "run")
+			{
+				ActiveRunProcesses[processId] = process;
+			}
 
 			process.BeginOutputReadLine();
 			process.BeginErrorReadLine();

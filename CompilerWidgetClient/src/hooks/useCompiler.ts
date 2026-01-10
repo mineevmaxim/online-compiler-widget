@@ -251,7 +251,6 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         });
 
         setOutput(res.data.output ?? "");
-        await stop();
 
     }
     const stop = () => {
