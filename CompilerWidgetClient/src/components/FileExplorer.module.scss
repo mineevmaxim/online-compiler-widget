@@ -19,6 +19,17 @@ $file-selected: #d0eaff;
     outline-offset: -2px;
 }
 
+.rootDropZone {
+    border: 2px dashed transparent;
+    border-radius: 4px;
+    transition: all 0.2s;
+    
+    &.dragOver {
+        background: rgba(0, 123, 255, 0.08);
+        border-color: #007bff;
+    }
+}
+
 .dragging {
     opacity: 0.5;
     background: #f5f5f5;

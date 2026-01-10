@@ -7,6 +7,41 @@
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #d8d8d8;
+  
+  .panel {
+    display: flex;
+    flex-direction: column;
+    position: relative; // Контейнер для resizer
+    
+    // ✅ Padding для внутреннего контента
+    > div:first-child {
+      flex: 1;
+      overflow: auto;
+    }
+    
+    // ✅ Resizer НЕ вылазит за границы
+    .resizer {
+      flex-shrink: 0;
+      width: 4px;
+      background: #e0e0e0;
+      cursor: col-resize;
+      position: absolute;
+      right: -2px; // Половина ширины за пределами
+      top: 0;
+      bottom: 0;
+      z-index: 10;
+      
+      &:hover {
+        background: #ccc;
+      }
+    }
+  }
+}
+
+// ✅ NodeResizer не мешает
+:global(.nodrag) {
+  z-index: 1; // Под панелями
+
 
   /* XYFlow drag-blocking */
   .drag-handle__custom {

@@ -516,6 +516,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     
     const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
     const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
+    const [dragOverRoot, setDragOverRoot] = useState(false);
     
     const createMenuRef = useRef<HTMLDivElement | null>(null);
     const addButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -598,6 +599,19 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         return result;
     }, [folders, localDocuments, expandedFolders, normalizePath, getFolderPath]);
 
+    const handleDropRoot = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedFileId = e.dataTransfer.getData('text/plain');
+    
+    console.log('DROP TO ROOT:', draggedFileId);
+    
+    // ✅ Корень = пустой путь
+    onMove(draggedFileId, '');
+    
+    setDragOverRoot(false);
+    setDraggedItemId(null);
+}, [onMove]);
+
     // Преобразуем документы в формат файлов для дерева
     const fileItems: FileItem[] = useMemo(() => {
         const result = localDocuments.map(doc => {
@@ -640,12 +654,10 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         let parentPath = '';
         
         if (item.type === 'file') {
-            // ✅ ФИКС: нормализуем двойные слеши
             const normalizedPath = normalizePath(item.path);
             const lastSlashIndex = normalizedPath.lastIndexOf('/');
             parentPath = lastSlashIndex === -1 ? '' : normalizedPath.substring(0, lastSlashIndex + 1);
         } else {
-            // Для папки
             const normalizedParent = normalizePath(item.path);
             const parts = normalizedParent.split('/').filter(Boolean);
             if (parts.length > 1) {
@@ -910,6 +922,7 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     const handleDragEnd = useCallback(() => {
         setDraggedItemId(null);
         setDragOverItemId(null);
+        setDragOverRoot(false);
         
         document.querySelectorAll(`.${cls.dragging}`).forEach(el => {
             if (el && el.classList) {
@@ -1037,6 +1050,17 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                     draggedItemId={draggedItemId}
                     expandedFolders={expandedFolders}
                 />
+                <div 
+        className={`${cls.rootDropZone} ${dragOverRoot ? cls.dragOver : ''}`}
+        onDragOver={(e) => {
+            e.preventDefault();
+            setDragOverRoot(true);
+            e.dataTransfer.dropEffect = 'move';
+        }}
+        onDragLeave={() => setDragOverRoot(false)}
+        onDrop={handleDropRoot}
+        style={{ minHeight: '20px', width: "auto" }}
+    />
             </ul>
         </div>
     );
