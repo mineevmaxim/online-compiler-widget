@@ -2,7 +2,7 @@
 
 public class ProcessStatus
 {
-	public Guid ProjectId { get; set; }
+	public long ProjectId { get; set; }
 	public bool IsRunning { get; set; }
 	public string ProcessId { get; set; }
 	public DateTime? StartedAt { get; set; }
