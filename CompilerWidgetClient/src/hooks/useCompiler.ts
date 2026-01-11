@@ -131,10 +131,9 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                 // Сохраняем начальное содержимое
                 fileApi.apiFilesFileIdSavePost(fileId, {
                     content: initialContent,
-                }).catch(err => console.error("Ошибка при сохранении:", err));
+                });
             })
             .catch(err => {
-                console.error("Ошибка при создании файла:", err);
                 alert(`Ошибка при создании файла: ${err.message}`);
             });
     };
@@ -173,29 +172,26 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         const doc = documents.find(d => d.id === id);
         if (!doc) return;
 
-        // 1. Локальное обновление
+       
         setDocuments(docs =>
             docs.map(doc => doc.id === id ? { ...doc, ...patch, modified: true } : doc)
         );
 
-        // 2. Если меняется имя - отправить на сервер
         if (patch.name !== undefined && patch.name !== doc.name) {
             fileApi.apiFilesFileIdRenamePost(id, {
                 name: patch.name
             }).catch(err => {
-                console.error("Ошибка при переименовании:", err);
-                // Откат если ошибка
                 setDocuments(docs =>
                     docs.map(d => d.id === id ? { ...d, name: doc.name } : d)
                 );
             });
         }
 
-        // 3. Если меняется контент - сохранить
+        
         if (patch.modified) {
             fileApi.apiFilesFileIdSavePost(id, {
                 content: patch.content,
-            }).catch(err => console.error("Ошибка при сохранении:", err));
+            });
         }
     };
 
@@ -235,10 +231,8 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                         modified: modifiedDocs.some(md => md.id === doc.id) ? false : doc.modified
                     }))
                 );
-                console.log("Все файлы сохранены");
             })
             .catch(error => {
-                console.error("Ошибка при сохранении:", error);
                 alert("Ошибка сохранения файлов");
             });
     };
@@ -255,7 +249,6 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
     }
     const stop = () => {
         compilerApi.apiCompileProjectProjectIdStopPost(projectId)
-            .then(res => console.log(res.data))
             .catch(err => alert(err));
     }
 

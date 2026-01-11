@@ -180,7 +180,6 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
             const dx = ev.clientX - startX;
             const newWidth = direction === "left" ? startWidth + dx : startWidth - dx;
             setter(Math.min(Math.max(newWidth, min), max));
-            // НЕ вызываем updateNodeDimensions здесь — ResizeObserver увидит изменение размеров DOM и обновит ноду
         };
 
         const onUp = () => {
@@ -193,7 +192,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
     };
 
     const handleMoveFile = (fileId: string, newPath: string) => {
-        updateDocPath(fileId, newPath)
+        updateDocPath(fileId, newPath);
     };
 
 

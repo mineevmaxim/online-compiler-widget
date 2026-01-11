@@ -125,7 +125,7 @@ const CreateItemModal: React.FC<CreateItemModalProps> = ({
                         />
                         {isFile ? (
                             <div className={cls.helpText}>
-                                Введите имя файла с расширением (.cs, .js, .txt)
+                                Введите имя файла с расширением (.cs, .txt)
                             </div>
                         ) : (
                             <div className={cls.helpText}>
@@ -603,16 +603,13 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     e.preventDefault();
     const draggedFileId = e.dataTransfer.getData('text/plain');
     
-    console.log('DROP TO ROOT:', draggedFileId);
     
-    // ✅ Корень = пустой путь
     onMove(draggedFileId, '');
     
     setDragOverRoot(false);
     setDraggedItemId(null);
 }, [onMove]);
 
-    // Преобразуем документы в формат файлов для дерева
     const fileItems: FileItem[] = useMemo(() => {
         const result = localDocuments.map(doc => {
             const normalizedPath = normalizePath(doc.path);
@@ -631,19 +628,15 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         return result;
     }, [localDocuments, normalizePath]);
 
-    // Строим дерево из путей
     const treeItems = useMemo(() => {
-    console.log('=== treeItems BUILD ===');
-    console.log('fileItems sample:', fileItems.slice(0, 3));
+
     
     const itemsByPath = new Map<string, TreeItem>();
     
-    // 1. Папки
     allFolders.forEach(folder => {
         itemsByPath.set(folder.path, { ...folder, children: [] });
     });
     
-    // 2. Файлы
     fileItems.forEach(file => {
         itemsByPath.set(file.path, file);
     });
@@ -668,7 +661,6 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
             }
         }
         
-        console.log(`${item.type} ${item.name}: ${item.path} -> parent: "${parentPath}"`);
         
         if (!itemsByParentPath.has(parentPath)) {
             itemsByParentPath.set(parentPath, []);
@@ -696,7 +688,6 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
     };
     
     const result = buildTree('');
-    console.log('FINAL treeItems:', result);
     return result;
 }, [allFolders, fileItems, normalizePath]);
 
@@ -725,7 +716,6 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                 
                 const newPath = parentPath + newName.trim() + '/';
                 
-                // Обновляем пользовательскую папку
                 const isUserFolder = folders.some(f => f.id === id);
                 
                 if (isUserFolder) {
@@ -745,7 +735,6 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
                     setFolders(prev => [...prev, newFolder]);
                 }
                 
-                // Обновляем состояние развернутости
                 if (expandedFolders.has(oldPath)) {
                     setExpandedFolders(prev => {
                         const newSet = new Set(prev);

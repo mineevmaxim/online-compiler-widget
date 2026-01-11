@@ -22,13 +22,13 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({ output, history }) => 
                     <OutputIcon className={cls.icon}/>
                     <span>Вывод</span>
                 </button>
-                <button
+                {/*<button
                     className={`${cls.tab} ${activeTab === 'history' ? cls.active : ''}`}
                     onClick={() => setActiveTab('history')}
                 >
                     <HistoryIcon className={cls.icon}/>
                     <span>История</span>
-                </button>
+                </button>*/}
             </div>
 
             <div className={cls.content}>
@@ -42,11 +42,11 @@ export const OutputPanel: React.FC<OutputPanelProps> = ({ output, history }) => 
 
                 <p className={cls.output}>{output}</p>
 
-                {activeTab === 'history' && (
+                {/*{activeTab === 'history' && (
                             <div className={cls.placeholder}>
                                 <HistoryIcon className={cls.bigIcon}/>
                                 <p>История пуста</p>
-                            </div>)}
+                            </div>)}*/}
             </div>
         </div>
     );

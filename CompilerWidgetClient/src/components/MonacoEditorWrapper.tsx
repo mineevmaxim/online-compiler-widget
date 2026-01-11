@@ -38,12 +38,12 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
             modelRef.current?.dispose();
         }
 
-        const newModel = monaco.editor.createModel(code, language);
+        const newModel = monaco.editor.createModel(code, "csharp");
         modelRef.current = newModel;
 
 
         editorRef.current?.focus();
-    }, [code, language]);
+    }, [code, "csharp"]);
 
     return (
         <div className={cls.editorContainer}>
@@ -53,21 +53,42 @@ export const MonacoEditorWrapper: React.FC<MonacoEditorWrapperProps> = ({
 
             <Editor
                 height="100%"
-                language={language}
+                language={"csharp"}
                 theme={theme}
                 onMount={handleEditorDidMount}
                 value={code} // контролируемое значение
                 onChange={(v) => onChange(v || "")}
                 options={{
                     minimap: { enabled: false },
-                    fontSize: 10,
+                    fontSize: 12,
                     scrollBeyondLastLine: false,
                     wordWrap: "off",
                     lineNumbers: "on",
                     folding: true,
                     renderLineHighlight: "all",
                     tabSize: 4,
-                }}
+                    // ✅ C# улучшения
+                    automaticLayout: true,
+                    cursorBlinking: "smooth",
+                    fontLigatures: true,
+                    suggest: {
+                        showFunctions: true,
+                        showClasses: true,
+                        showVariables: true,
+                        showConstructors: true,
+                    },
+                    quickSuggestions: {
+                        other: true,
+                        comments: false,
+                        strings: false,
+                    },
+                    parameterHints: {
+                        enabled: true,
+                    },
+                    lightbulb: {
+                        enabled: "onCode" as any,
+                    },
+                            }}
             />
         </div>
     );
