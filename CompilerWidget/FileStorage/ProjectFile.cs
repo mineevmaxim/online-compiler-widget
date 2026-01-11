@@ -8,5 +8,5 @@ public class ProjectFile
 	public ProjectFileExtension Extension { get; set; }
 
 	public Project Project { get; set; }
-	public Guid ProjectId { get; set; }
+	public long ProjectId { get; set; }
 }

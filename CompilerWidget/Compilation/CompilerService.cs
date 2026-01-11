@@ -257,15 +257,13 @@ public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 	
 	public static void StopProcess(string processId)
 	{
-		if (ActiveRunProcesses.TryGetValue(processId, out var process) && !process.HasExited)
+		if (!ActiveRunProcesses.TryGetValue(processId, out var process) || process.HasExited) return;
+		try
 		{
-			try
-			{
-				process.Kill(true);
-				ActiveRunProcesses.Remove(processId);
-			}
-			catch { /* ignore */ }
+			process.Kill(true);
+			ActiveRunProcesses.Remove(processId);
 		}
+		catch { /* ignore */ }
 	}
 
 	private async Task<(bool Success, string Output, int ExitCode)> ExecuteDotnetCommand(

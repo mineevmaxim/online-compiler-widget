@@ -8,26 +8,16 @@ namespace CompilerWidgetApi.Controllers;
 
 [ApiController]
 [Route("/api/compile")]
-public class CompilerController : ControllerBase
+public class CompilerController(
+	IFileService fileService,
+	CompilerService compilerService,
+	ILogger<CompilerController> logger)
+	: ControllerBase
 {
-	private readonly IFileService fileService;
-	private readonly CompilerService compilerService;
-	private readonly ILogger<CompilerController> logger;
+	private static readonly Dictionary<long, RunningProcessInfo> RunningProcesses = new();
 
-	private static readonly Dictionary<Guid, RunningProcessInfo> RunningProcesses = new();
-
-	public CompilerController(
-		IFileService fileService,
-		CompilerService compilerService,
-		ILogger<CompilerController> logger)
-	{
-		this.fileService = fileService;
-		this.compilerService = compilerService;
-		this.logger = logger;
-	}
-
-	[HttpPost("project/{projectId:guid}/run")]
-	public async Task<ActionResult<RunResult>> Run(Guid projectId, [FromBody] RunRequest request)
+	[HttpPost("project/{projectId:long}/run")]
+	public async Task<ActionResult<RunResult>> Run(long projectId, [FromBody] RunRequest request)
 	{
 		try
 		{
@@ -77,29 +67,23 @@ public class CompilerController : ControllerBase
 		}
 	}
 
-	[HttpPost("project/{projectId:guid}/stop")]
-	public async Task<ActionResult> Stop(Guid projectId)
+	[HttpPost("project/{projectId:long}/stop")]
+	public Task<ActionResult> Stop(long projectId)
 	{
 		try
 		{
 			logger.LogInformation("Остановка проекта {ProjectId}", projectId);
 
 			if (!RunningProcesses.TryGetValue(projectId, out var processInfo))
-			{
-				return NotFound(new { Error = "Проект не запущен" });
-			}
+				return Task.FromResult<ActionResult>(NotFound(new { Error = "Проект не запущен" }));
 
-			// ✅ НОВОЕ: Останавливаем реальный процесс dotnet run
 			CompilerService.StopProcess(processInfo.ProcessId);
 			logger.LogInformation("Процесс {ProcessId} остановлен", processInfo.ProcessId);
 
-			// Очистка временной директории
 			try
 			{
 				if (Directory.Exists(processInfo.TempDirectory))
-				{
 					Directory.Delete(processInfo.TempDirectory, true);
-				}
 			}
 			catch (Exception ex)
 			{
@@ -111,24 +95,24 @@ public class CompilerController : ControllerBase
 
 			logger.LogInformation("Проект {ProjectId} остановлен полностью", projectId);
 
-			return Ok(new
+			return Task.FromResult<ActionResult>(Ok(new
 			{
 				Message = "Проект остановлен",
 				ProjectId = projectId,
 				ProcessId = processInfo.ProcessId,
 				StoppedAt = DateTime.UtcNow
-			});
+			}));
 		}
 		catch (Exception ex)
 		{
 			logger.LogError(ex, "Ошибка при остановке проекта {ProjectId}", projectId);
-			return StatusCode(500, new { Error = ex.Message });
+			return Task.FromResult<ActionResult>(StatusCode(500, new { Error = ex.Message }));
 		}
 	}
 
 
-	[HttpGet("project/{projectId:guid}/status")]
-	public ActionResult<ProcessStatus> GetStatus(Guid projectId)
+	[HttpGet("project/{projectId:long}/status")]
+	public ActionResult<ProcessStatus> GetStatus(long projectId)
 	{
 		var isRunning = RunningProcesses.ContainsKey(projectId);
 		var processInfo = isRunning ? RunningProcesses[projectId] : null;
@@ -159,8 +143,8 @@ public class CompilerController : ControllerBase
 		return Ok(runningProjects);
 	}
 
-	[HttpPost("project/{projectId:guid}/compile")]
-	public async Task<ActionResult<CompileResult>> Compile(Guid projectId, [FromBody] CompileRequest request)
+	[HttpPost("project/{projectId:long}/compile")]
+	public async Task<ActionResult<CompileResult>> Compile(long projectId, [FromBody] CompileRequest request)
 	{
 		try
 		{
@@ -168,26 +152,20 @@ public class CompilerController : ControllerBase
 
 			var projectFiles = fileService.GetProjectFiles(projectId).ToList();
 			if (!projectFiles.Any())
-			{
 				return NotFound(new { Error = "Проект не найден" });
-			}
 
 			var tempPath = CreateTempProjectDirectory(projectId, projectFiles);
 
 			var mainFile = FindMainFile(projectFiles, request.MainFile);
 			if (string.IsNullOrEmpty(mainFile))
-			{
 				return BadRequest(new { Error = "Не найден .csproj файл" });
-			}
 
 			var result = await compilerService.RunCompilerContainer(tempPath, mainFile);
 
 			try
 			{
 				if (Directory.Exists(tempPath))
-				{
 					Directory.Delete(tempPath, true);
-				}
 			}
 			catch (Exception ex)
 			{
@@ -210,7 +188,7 @@ public class CompilerController : ControllerBase
 		}
 	}
 
-	private string CreateTempProjectDirectory(Guid projectId, IEnumerable<FileMetadata> projectFiles)
+	private string CreateTempProjectDirectory(long projectId, IEnumerable<FileMetadata> projectFiles)
 	{
 		var tempDir = Path.Combine(Path.GetTempPath(), $"compile_{projectId}_{Guid.NewGuid()}");
 		Directory.CreateDirectory(tempDir);
@@ -223,54 +201,46 @@ public class CompilerController : ControllerBase
 				var dirPath = Path.GetDirectoryName(filePath);
 
 				if (!Directory.Exists(dirPath))
-				{
 					Directory.CreateDirectory(dirPath);
-				}
 
 				var content = fileService.Read(file.FileId);
 				System.IO.File.WriteAllText(filePath, content);
 			}
 			catch (Exception ex)
 			{
-				logger.LogWarning(ex, "Не удалось скопировать файл {FileName} во временную директорию",
-					file.FileName);
+				logger.LogWarning(ex, "Не удалось скопировать файл {FileName} во временную директорию", file.FileName);
 			}
 		}
 
 		var appSettingsPath = Path.Combine(tempDir, "appsettings.json");
-		if (!System.IO.File.Exists(appSettingsPath))
+		if (System.IO.File.Exists(appSettingsPath)) return tempDir;
+		var defaultSettings = new
 		{
-			var defaultSettings = new
+			Logging = new
 			{
-				Logging = new
+				LogLevel = new
 				{
-					LogLevel = new
-					{
-						Default = "Information",
-						Microsoft = "Warning",
-					}
-				},
-				AllowedHosts = "*"
-			};
+					Default = "Information",
+					Microsoft = "Warning",
+				}
+			},
+			AllowedHosts = "*"
+		};
 
-			System.IO.File.WriteAllText(appSettingsPath, JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true }));
-		}
+		System.IO.File.WriteAllText(appSettingsPath, JsonSerializer.Serialize(defaultSettings, new JsonSerializerOptions { WriteIndented = true }));
 
 		return tempDir;
 	}
 
-	private string FindMainFile(List<FileMetadata> projectFiles, string requestedMainFile = null)
+	private static string FindMainFile(List<FileMetadata> projectFiles, string requestedMainFile = null)
 	{
 		if (!string.IsNullOrEmpty(requestedMainFile))
 		{
-			var file = projectFiles.FirstOrDefault(f =>
-				f.FileName.Equals(requestedMainFile, StringComparison.OrdinalIgnoreCase) ||
-				$"{f.FileName}".Equals(requestedMainFile, StringComparison.OrdinalIgnoreCase));
+			var file = projectFiles.FirstOrDefault(f => f.FileName.Equals(requestedMainFile, StringComparison.OrdinalIgnoreCase) ||
+			                                            $"{f.FileName}".Equals(requestedMainFile, StringComparison.OrdinalIgnoreCase));
 
 			if (file != null)
-			{
 				return $"{file.FileName}";
-			}
 		}
 
 		var csprojFile = projectFiles.FirstOrDefault(f =>
@@ -283,9 +253,7 @@ public class CompilerController : ControllerBase
 			$"{f.FileName}".Equals("Program", StringComparison.OrdinalIgnoreCase));
 
 		if (programFile != null)
-		{
 			return $"{programFile.FileName}";
-		}
 
 		var csFile = projectFiles.FirstOrDefault(f =>
 			Path.GetExtension(f.FileName).Equals(".cs", StringComparison.OrdinalIgnoreCase));

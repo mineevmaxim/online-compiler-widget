@@ -16,7 +16,7 @@ public interface IFileService
 	/// <param name="newPath"></param>
 	public void Move(Guid fileId, string newPath);
 
-	public void MoveAllFilesByPaath(Guid projectId, string oldPath, string newPath);
+	public void MoveAllFilesByPaath(long projectId, string oldPath, string newPath);
 	
 	public void MoveOneFile(Guid fileId, string newPath);
 
@@ -33,7 +33,7 @@ public interface IFileService
 	/// <param name="projectId"></param>
 	/// <param name="path"></param>
 	/// <returns></returns>
-	Guid Create(string fileName, Guid projectId, string path);
+	Guid Create(string fileName, long projectId, string path);
 
 	/// <summary>
 	/// Читает все содержимое файла
@@ -52,7 +52,7 @@ public interface IFileService
 	
 	
 	FileMetadata? GetFileInfo(Guid fileId);
-	IEnumerable<FileMetadata> GetProjectFiles(Guid projectId);
+	IEnumerable<FileMetadata> GetProjectFiles(long projectId);
 	
 	/// <summary>
 	/// Переименовывает файл (меняет только имя, без расширения)

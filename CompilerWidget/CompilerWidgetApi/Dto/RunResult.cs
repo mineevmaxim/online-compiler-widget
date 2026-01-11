@@ -8,6 +8,6 @@ public class RunResult
 	public string Output { get; set; }
 	public List<CompilationError> Errors { get; set; } = new();
 	public string ProcessId { get; set; }
-	public Guid ProjectId { get; set; }
+	public long ProjectId { get; set; }
 	public DateTime StartedAt { get; set; }
 }

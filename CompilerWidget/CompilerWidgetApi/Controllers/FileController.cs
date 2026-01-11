@@ -26,8 +26,8 @@ public class FileController(IFileService fileService): Controller
 	}
 	
 	[HttpPost]
-	[Route("project/{projectId:guid}/change_all_paths")]
-	public ActionResult ChangePath(Guid projectId, [FromBody] PathChangeRequest path)
+	[Route("project/{projectId:long}/change_all_paths")]
+	public ActionResult ChangePath(long projectId, [FromBody] PathChangeRequest path)
 	{
 		
 		fileService.MoveAllFilesByPaath(projectId, path.oldPath, path.newPath);
@@ -51,8 +51,8 @@ public class FileController(IFileService fileService): Controller
 	}
 
 	[HttpPost]
-	[Route("project/{projectId:guid}")]
-	public ActionResult<Guid> CreateFile(Guid projectId, [FromBody] CreateFileDto createFileDto)
+	[Route("project/{projectId:long}")]
+	public ActionResult<Guid> CreateFile(long projectId, [FromBody] CreateFileDto createFileDto)
 	{
 		var result = fileService.Create(createFileDto.Name, projectId, createFileDto.Path);
 		return Ok(result);
@@ -68,8 +68,8 @@ public class FileController(IFileService fileService): Controller
 	}
 	
 	[HttpGet]
-	[Route("{projectId:guid}")]
-	public ActionResult<IEnumerable<FileMetadata>> GetProjectFiles([FromRoute]Guid projectId)
+	[Route("{projectId:long}")]
+	public ActionResult<IEnumerable<FileMetadata>> GetProjectFiles([FromRoute]long projectId)
 	{
 		var files = fileService.GetProjectFiles(projectId);
 		return Ok(files);

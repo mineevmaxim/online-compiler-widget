@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FileStorage.Migrations
 {
     [DbContext(typeof(FileStorageDbContext))]
-    [Migration("20260108131124_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260111092009_FixId")]
+    partial class FixId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,9 +27,8 @@ namespace FileStorage.Migrations
 
             modelBuilder.Entity("FileStorage.Project", b =>
                 {
-                    b.Property<Guid>("ProjectId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("EntryPoint")
                         .HasColumnType("uuid");
@@ -60,8 +59,8 @@ namespace FileStorage.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("FileId");
 

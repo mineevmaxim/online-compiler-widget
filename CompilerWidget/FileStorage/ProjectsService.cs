@@ -9,23 +9,21 @@ public class ProjectService(
 	ILogger<ProjectService> logger)
 	: IProjectService
 {
-	public async Task<Guid> CreateProjectAsync(string? name = null)
+	public async Task<long> CreateProjectAsync(string? name = null)
 	{
 		try
 		{
-			var projectId = Guid.NewGuid();
 			var project = new Project
 			{
-				ProjectId = projectId,
 				ProjectName = name ?? $"Project_{DateTime.Now:yyyyMMdd_HHmmss}",
 			};
 
 			context.Projects.Add(project);
 			await context.SaveChangesAsync();
 
-			logger.LogInformation("Создан проект {ProjectId} с именем {Name}", projectId, project.ProjectName);
+			logger.LogInformation("Создан проект {ProjectId} с именем {Name}", project.ProjectId, project.ProjectName);
 
-			return projectId;
+			return project.ProjectId;
 		}
 		catch (Exception ex)
 		{
@@ -34,11 +32,11 @@ public class ProjectService(
 		}
 	}
 
-	public async Task<bool> GetOrCreateProjectAsync(Guid id)
+	public async Task<bool> GetOrCreateProjectAsync(long id)
 	{
 		var project = await context.Projects.AsNoTracking().FirstOrDefaultAsync(proj =>  proj.ProjectId == id);
 		if (project != null) return false;
-		var newProject = new Project()
+		var newProject = new Project
 		{
 			ProjectId = id,
 			ProjectName = $"Project_{DateTime.Now:yyyyMMdd_HHmmss}"
@@ -48,7 +46,7 @@ public class ProjectService(
 		return true;
 	}
 
-	public async Task<bool> DeleteProjectAsync(Guid projectId)
+	public async Task<bool> DeleteProjectAsync(long projectId)
 	{
 		await using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -89,7 +87,7 @@ public class ProjectService(
 		}
 	}
 
-	public async Task<ProjectInfo?> GetProjectInfoAsync(Guid projectId)
+	public async Task<ProjectInfo?> GetProjectInfoAsync(long projectId)
 	{
 		try
 		{
@@ -135,7 +133,7 @@ public class ProjectService(
 		}
 	}
 
-	public async Task<bool> RenameProjectAsync(Guid projectId, string newName)
+	public async Task<bool> RenameProjectAsync(long projectId, string newName)
 	{
 		try
 		{
@@ -158,7 +156,7 @@ public class ProjectService(
 		}
 	}
 
-	public async Task<ProjectStats> GetProjectStatsAsync(Guid projectId)
+	public async Task<ProjectStats> GetProjectStatsAsync(long projectId)
 	{
 		try
 		{

@@ -7,7 +7,7 @@ public class Project
 {
 	[Key]
 	[DatabaseGenerated(DatabaseGeneratedOption.None)]
-	public Guid ProjectId { get; set; }
+	public long ProjectId { get; set; }
 	public Guid EntryPoint { get; set; }
 	public string ProjectName { get; set; }
 

@@ -2,7 +2,7 @@
 
 public class ProjectStats
 {
-	public Guid ProjectId { get; set; }
+	public long ProjectId { get; set; }
 	public int FileCount { get; set; }
 	public int CSharpFiles { get; set; }
 	public int JsFiles { get; set; }

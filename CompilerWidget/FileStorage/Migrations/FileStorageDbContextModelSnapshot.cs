@@ -24,9 +24,8 @@ namespace FileStorage.Migrations
 
             modelBuilder.Entity("FileStorage.Project", b =>
                 {
-                    b.Property<Guid>("ProjectId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid>("EntryPoint")
                         .HasColumnType("uuid");
@@ -57,8 +56,8 @@ namespace FileStorage.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("ProjectId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("FileId");
 

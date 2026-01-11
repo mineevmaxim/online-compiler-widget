@@ -6,19 +6,10 @@ namespace CompilerWidgetApi.Controllers;
 
 [ApiController]
 [Route("/api/projects")]
-public class ProjectController : ControllerBase
+public class ProjectController(
+	IProjectService projectService,
+	ILogger<ProjectController> logger) : ControllerBase
 {
-	private readonly IProjectService projectService;
-	private readonly ILogger<ProjectController> logger;
-
-	public ProjectController(
-		IProjectService projectService,
-		ILogger<ProjectController> logger)
-	{
-		this.projectService = projectService;
-		this.logger = logger;
-	}
-
 	[HttpPost("create")]
 	public async Task<ActionResult<Guid>> CreateProject([FromBody] CreateProjectRequest? request)
 	{
@@ -37,13 +28,11 @@ public class ProjectController : ControllerBase
 	[HttpPost("getOrCreate/{projectId}")]
 	public async Task<ActionResult> GetOrCreateProject([FromRoute] string projectId)
 	{
-		var id = Guid.Parse(projectId);
+		var id = long.Parse(projectId);
 		try
 		{
-			Console.WriteLine(Guid.Parse(projectId));
 			var projectCreated = await projectService.GetOrCreateProjectAsync(id);
-			if (projectCreated)
-				return Created();
+			if (projectCreated) return Created();
 			return Ok();
 		}
 		catch (Exception ex)
@@ -53,17 +42,15 @@ public class ProjectController : ControllerBase
 		}
 	}
 
-	[HttpDelete("{projectId:guid}")]
-	public async Task<ActionResult> DeleteProject(Guid projectId)
+	[HttpDelete("{projectId:long}")]
+	public async Task<ActionResult> DeleteProject(long projectId)
 	{
 		try
 		{
 			var success = await projectService.DeleteProjectAsync(projectId);
 
 			if (!success)
-			{
 				return NotFound(new { Error = "Проект не найден" });
-			}
 
 			return Ok(new { Message = "Проект удален" });
 		}
@@ -74,8 +61,8 @@ public class ProjectController : ControllerBase
 		}
 	}
 
-	[HttpGet("{projectId:guid}")]
-	public async Task<ActionResult<ProjectInfo>> GetProject(Guid projectId)
+	[HttpGet("{projectId:long}")]
+	public async Task<ActionResult<ProjectInfo>> GetProject(long projectId)
 	{
 		try
 		{
@@ -108,15 +95,12 @@ public class ProjectController : ControllerBase
 		}
 	}
 
-	[HttpPut("{projectId:guid}/rename")]
-	public async Task<ActionResult> RenameProject(
-		Guid projectId,
-		[FromBody] RenameProjectRequest request)
+	[HttpPut("{projectId:long}/rename")]
+	public async Task<ActionResult> RenameProject(long projectId, [FromBody] RenameProjectRequest request)
 	{
 		try
 		{
-			var success = await projectService.RenameProjectAsync(
-				projectId, request.NewName);
+			var success = await projectService.RenameProjectAsync(projectId, request.NewName);
 
 			if (!success)
 				return NotFound(new { Error = "Проект не найден" });
@@ -130,8 +114,8 @@ public class ProjectController : ControllerBase
 		}
 	}
 
-	[HttpGet("{projectId:guid}/stats")]
-	public async Task<ActionResult<ProjectStats>> GetProjectStats(Guid projectId)
+	[HttpGet("{projectId:long}/stats")]
+	public async Task<ActionResult<ProjectStats>> GetProjectStats(long projectId)
 	{
 		try
 		{
@@ -146,7 +130,7 @@ public class ProjectController : ControllerBase
 	}
 
 	[HttpPost("{projectId:guid}/duplicate")]
-	public async Task<ActionResult<Guid>> DuplicateProject(Guid projectId)
+	public async Task<ActionResult<Guid>> DuplicateProject(long projectId)
 	{
 		try
 		{

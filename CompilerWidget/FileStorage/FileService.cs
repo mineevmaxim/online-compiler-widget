@@ -41,7 +41,7 @@ public class FileService : IFileService
 		this.logger.LogInformation("Создана корневая папка хранилища: {Path}", storagePath);
 	}
 
-	public Guid Create(string fileName, Guid projectId, string path)
+	public Guid Create(string fileName, long projectId, string path)
 	{
 		try
 		{
@@ -217,27 +217,24 @@ public class FileService : IFileService
 			? throw new FileNotFoundException($"Файл с ID {fileId} не найден в БД")
 			: GetPhysicalFilePath(fileId, file.FileName, extension ?? ToExtension(file.Extension), file.Path);
 	}
-	
+
 	private string NormalizePath(string path)
 	{
 		if (string.IsNullOrEmpty(path))
 			return path;
-    
-		// Заменяем все обратные слэши на прямые
+
 		path = path.Replace("/", "\\");
-    
-		// Убираем двойные слэши
+
 		while (path.Contains("\\\\"))
 		{
 			path = path.Replace("\\\\", "\\");
 		}
-    
-		// Убираем последний слэш, если это не корневой путь
+
 		if (path.Length > 1 && path.EndsWith("\\"))
 		{
 			path = path.TrimEnd('\\');
 		}
-    
+
 		return path;
 	}
 
@@ -245,78 +242,56 @@ public class FileService : IFileService
 	{
 		try
 		{
-			var fullPath = newPath+context.ProjectFiles.Find(fileId).FileName;
+			var fullPath = newPath + context.ProjectFiles.Find(fileId).FileName;
 			fullPath = NormalizePath(fullPath);
 			Move(fileId, fullPath);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			logger.LogError(ex, "Ошибка при перемещении файла {FileId} на путь {NewPath}", fileId, newPath);
 			throw;
 		}
 	}
-	
-	public void MoveAllFilesByPaath(Guid projectId, string oldPath, string newPath)
-{
-	
-	oldPath =  NormalizePath(oldPath);
-	newPath =  NormalizePath(newPath);
-	
-    try
-    {
-        // Получаем все файлы, начинающиеся с oldPath
-        var files = context.ProjectFiles
-            .Where(f => f.ProjectId == projectId && f.Path.StartsWith(oldPath))
-            .ToList();
-        
-        // Обрабатываем каждый файл
-        foreach (var file in files)
-        {
-            try
-            {
-                // Получаем относительную часть пути (после oldPath)
-                string relativePath = file.Path.Substring(oldPath.Length);
-                
-                // Убираем начальный слэш, если есть
-                if (relativePath.StartsWith("/"))
-                    relativePath = relativePath.Substring(1);
-                
-                // Создаем новый путь: newPath + относительная часть
-                string finalNewPath;
-                if (string.IsNullOrEmpty(relativePath))
-                {
-                    // Если файл был непосредственно в oldPath
-                    finalNewPath = newPath;
-                }
-                else
-                {
-                    // Соединяем новый путь и относительную часть
-                    finalNewPath = $"{newPath.TrimEnd('/')}/{relativePath}";
-                }
-                
-                // Получаем полный путь для файла (путь + имя файла)
-                string fullNewPath = $"{finalNewPath.TrimEnd('/')}/{file.FileName}";
-                
-                // Вызываем метод Move для перемещения файла
-                Move(file.FileId, fullNewPath);
-                
-                logger.LogInformation("Файл {FileName} перемещен из {OldPath} в {NewPath}", 
-                    file.FileName, file.Path, finalNewPath);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Ошибка при обработке файла {FileId}", file.FileId);
-                // Продолжаем обработку остальных файлов даже если один не удался
-            }
-        }
-        
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Ошибка в GetFilesByPath для проекта {ProjectId}", projectId);
-        throw;
-    }
-}
+
+	public void MoveAllFilesByPaath(long projectId, string oldPath, string newPath)
+	{
+		oldPath = NormalizePath(oldPath);
+		newPath = NormalizePath(newPath);
+
+		try
+		{
+			var files = context.ProjectFiles
+				.Where(f => f.ProjectId == projectId && f.Path.StartsWith(oldPath))
+				.ToList();
+
+			foreach (var file in files)
+			{
+				try
+				{
+					var relativePath = file.Path[oldPath.Length..];
+
+					if (relativePath.StartsWith($"/"))
+						relativePath = relativePath[1..];
+
+					var finalNewPath = string.IsNullOrEmpty(relativePath) ? newPath : $"{newPath.TrimEnd('/')}/{relativePath}";
+					var fullNewPath = $"{finalNewPath.TrimEnd('/')}/{file.FileName}";
+
+					Move(file.FileId, fullNewPath);
+
+					logger.LogInformation("Файл {FileName} перемещен из {OldPath} в {NewPath}", file.FileName, file.Path, finalNewPath);
+				}
+				catch (Exception ex)
+				{
+					logger.LogError(ex, "Ошибка при обработке файла {FileId}", file.FileId);
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка в GetFilesByPath для проекта {ProjectId}", projectId);
+			throw;
+		}
+	}
 
 	public void Move(Guid fileId, string newPath)
 	{
@@ -398,7 +373,7 @@ public class FileService : IFileService
 		};
 	}
 
-	public IEnumerable<FileMetadata> GetProjectFiles(Guid projectId)
+	public IEnumerable<FileMetadata> GetProjectFiles(long projectId)
 	{
 		return context.ProjectFiles
 			.Where(f => f.ProjectId == projectId)

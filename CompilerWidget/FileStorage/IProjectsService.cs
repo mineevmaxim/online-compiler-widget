@@ -5,24 +5,24 @@ public interface IProjectService
 	/// <summary>
 	/// Создает новый проект
 	/// </summary>
-	Task<Guid> CreateProjectAsync(string? name = null);
+	Task<long> CreateProjectAsync(string? name = null);
 	
 	/// <summary>
 	/// created -> true, get -> false
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	Task<bool> GetOrCreateProjectAsync(Guid id);
+	Task<bool> GetOrCreateProjectAsync(long id);
     
 	/// <summary>
 	/// Удаляет проект со всеми файлами
 	/// </summary>
-	Task<bool> DeleteProjectAsync(Guid projectId);
+	Task<bool> DeleteProjectAsync(long projectId);
     
 	/// <summary>
 	/// Получает информацию о проекте
 	/// </summary>
-	Task<ProjectInfo?> GetProjectInfoAsync(Guid projectId);
+	Task<ProjectInfo?> GetProjectInfoAsync(long projectId);
     
 	/// <summary>
 	/// Получает все проекты
@@ -32,10 +32,10 @@ public interface IProjectService
 	/// <summary>
 	/// Переименовывает проект
 	/// </summary>
-	Task<bool> RenameProjectAsync(Guid projectId, string newName);
+	Task<bool> RenameProjectAsync(long projectId, string newName);
     
 	/// <summary>
 	/// Получает статистику по проекту
 	/// </summary>
-	Task<ProjectStats> GetProjectStatsAsync(Guid projectId);
+	Task<ProjectStats> GetProjectStatsAsync(long projectId);
 }
