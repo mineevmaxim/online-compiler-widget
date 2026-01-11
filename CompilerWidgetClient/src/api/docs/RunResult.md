@@ -9,7 +9,7 @@ Name | Type | Description | Notes
 **output** | **string** |  | [optional] [default to undefined]
 **errors** | [**Array&lt;CompilationError&gt;**](CompilationError.md) |  | [optional] [default to undefined]
 **processId** | **string** |  | [optional] [default to undefined]
-**projectId** | **string** |  | [optional] [default to undefined]
+**projectId** | **number** |  | [optional] [default to undefined]
 **startedAt** | **string** |  | [optional] [default to undefined]
 
 ## Example

@@ -31,13 +31,13 @@ interface ConfigModel {
 }
 
 interface CompilerWidgetProps {
-    id: string;
+    id: number;
     isNew: boolean;
     data?: {
         initialFiles?: Record<string, string>;
         language?: 'csharp' | 'js';
     };
-    setNodeHeight?: (id: string, height: number) => void;
+    setNodeHeight?: (id: number, height: number) => void;
     getInfo?: (info: GetInfoModel) => void; 
 }
 
@@ -58,7 +58,8 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
         history,
         run,
         stop,
-        saveAll
+        saveAll,
+        isInitialized
     } = useCompiler(
         id, isNew, data?.initialFiles || {
             'Program.cs': '// Write your code here\nConsole.WriteLine("Hello, World!");',
@@ -241,6 +242,7 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
                     {/* LEFT PANEL */}
                     <div className={cls.panel} style={{ width: leftWidth }}>
                         <FileExplorer
+                            key = {documents.length}
                             documents={documents}
                             selectedId={selectedId}
                             onSelect={setSelectedId}
@@ -265,6 +267,8 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
                         {currentDocument ? (
                             <div className={cls.editCont}>
                                 <MonacoEditorWrapper
+
+                                    filename={currentDocument.name}
                                     code={currentCode}
                                     language={currentLanguage}
                                     onChange={handleCodeChange}

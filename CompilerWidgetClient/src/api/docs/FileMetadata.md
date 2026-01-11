@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **fileId** | **string** |  | [optional] [default to undefined]
 **fileName** | **string** |  | [optional] [default to undefined]
-**projectId** | **string** |  | [optional] [default to undefined]
+**projectId** | **number** |  | [optional] [default to undefined]
 **path** | **string** |  | [optional] [default to undefined]
 **physicalPath** | **string** |  | [optional] [default to undefined]
 **existsOnDisk** | **boolean** |  | [optional] [default to undefined]

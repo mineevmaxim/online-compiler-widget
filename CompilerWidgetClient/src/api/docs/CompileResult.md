@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **success** | **boolean** |  | [optional] [default to undefined]
 **output** | **string** |  | [optional] [default to undefined]
 **errors** | [**Array&lt;CompilationError&gt;**](CompilationError.md) |  | [optional] [default to undefined]
-**projectId** | **string** |  | [optional] [default to undefined]
+**projectId** | **number** |  | [optional] [default to undefined]
 **compiledAt** | **string** |  | [optional] [default to undefined]
 
 ## Example

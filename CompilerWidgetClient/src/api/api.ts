@@ -37,7 +37,7 @@ export interface CompileResult {
     'success'?: boolean;
     'output'?: string | null;
     'errors'?: Array<CompilationError> | null;
-    'projectId'?: string;
+    'projectId'?: number;
     'compiledAt'?: string;
 }
 export interface CreateFileDto {
@@ -50,7 +50,7 @@ export interface CreateProjectRequest {
 export interface FileMetadata {
     'fileId'?: string;
     'fileName'?: string | null;
-    'projectId'?: string;
+    'projectId'?: number;
     'path'?: string | null;
     'physicalPath'?: string | null;
     'existsOnDisk'?: boolean;
@@ -60,19 +60,19 @@ export interface PathChangeRequest {
     'newPath'?: string | null;
 }
 export interface ProcessStatus {
-    'projectId'?: string;
+    'projectId'?: number;
     'isRunning'?: boolean;
     'processId'?: string | null;
     'startedAt'?: string | null;
     'uptime'?: string;
 }
 export interface ProjectInfo {
-    'projectId'?: string;
+    'projectId'?: number;
     'name'?: string | null;
     'fileCount'?: number;
 }
 export interface ProjectStats {
-    'projectId'?: string;
+    'projectId'?: number;
     'fileCount'?: number;
     'cSharpFiles'?: number;
     'jsFiles'?: number;
@@ -94,11 +94,11 @@ export interface RunResult {
     'output'?: string | null;
     'errors'?: Array<CompilationError> | null;
     'processId'?: string | null;
-    'projectId'?: string;
+    'projectId'?: number;
     'startedAt'?: string;
 }
 export interface RunningProjectInfo {
-    'projectId'?: string;
+    'projectId'?: number;
     'processId'?: string | null;
     'startedAt'?: string;
     'uptime'?: string;
@@ -114,12 +114,12 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
     return {
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {CompileRequest} [compileRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdCompilePost: async (projectId: string, compileRequest?: CompileRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiCompileProjectProjectIdCompilePost: async (projectId: number, compileRequest?: CompileRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiCompileProjectProjectIdCompilePost', 'projectId', projectId)
             const localVarPath = `/api/compile/project/{projectId}/compile`
@@ -151,12 +151,12 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {RunRequest} [runRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdRunPost: async (projectId: string, runRequest?: RunRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiCompileProjectProjectIdRunPost: async (projectId: number, runRequest?: RunRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiCompileProjectProjectIdRunPost', 'projectId', projectId)
             const localVarPath = `/api/compile/project/{projectId}/run`
@@ -188,11 +188,11 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdStatusGet: async (projectId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiCompileProjectProjectIdStatusGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiCompileProjectProjectIdStatusGet', 'projectId', projectId)
             const localVarPath = `/api/compile/project/{projectId}/status`
@@ -221,11 +221,11 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdStopPost: async (projectId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiCompileProjectProjectIdStopPost: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiCompileProjectProjectIdStopPost', 'projectId', projectId)
             const localVarPath = `/api/compile/project/{projectId}/stop`
@@ -292,12 +292,12 @@ export const CompilerApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {CompileRequest} [compileRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiCompileProjectProjectIdCompilePost(projectId: string, compileRequest?: CompileRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompileResult>> {
+        async apiCompileProjectProjectIdCompilePost(projectId: number, compileRequest?: CompileRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CompileResult>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiCompileProjectProjectIdCompilePost(projectId, compileRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompilerApi.apiCompileProjectProjectIdCompilePost']?.[localVarOperationServerIndex]?.url;
@@ -305,12 +305,12 @@ export const CompilerApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {RunRequest} [runRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiCompileProjectProjectIdRunPost(projectId: string, runRequest?: RunRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RunResult>> {
+        async apiCompileProjectProjectIdRunPost(projectId: number, runRequest?: RunRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<RunResult>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiCompileProjectProjectIdRunPost(projectId, runRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompilerApi.apiCompileProjectProjectIdRunPost']?.[localVarOperationServerIndex]?.url;
@@ -318,11 +318,11 @@ export const CompilerApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiCompileProjectProjectIdStatusGet(projectId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProcessStatus>> {
+        async apiCompileProjectProjectIdStatusGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProcessStatus>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiCompileProjectProjectIdStatusGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompilerApi.apiCompileProjectProjectIdStatusGet']?.[localVarOperationServerIndex]?.url;
@@ -330,11 +330,11 @@ export const CompilerApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiCompileProjectProjectIdStopPost(projectId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiCompileProjectProjectIdStopPost(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiCompileProjectProjectIdStopPost(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompilerApi.apiCompileProjectProjectIdStopPost']?.[localVarOperationServerIndex]?.url;
@@ -362,40 +362,40 @@ export const CompilerApiFactory = function (configuration?: Configuration, baseP
     return {
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {CompileRequest} [compileRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdCompilePost(projectId: string, compileRequest?: CompileRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompileResult> {
+        apiCompileProjectProjectIdCompilePost(projectId: number, compileRequest?: CompileRequest, options?: RawAxiosRequestConfig): AxiosPromise<CompileResult> {
             return localVarFp.apiCompileProjectProjectIdCompilePost(projectId, compileRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {RunRequest} [runRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdRunPost(projectId: string, runRequest?: RunRequest, options?: RawAxiosRequestConfig): AxiosPromise<RunResult> {
+        apiCompileProjectProjectIdRunPost(projectId: number, runRequest?: RunRequest, options?: RawAxiosRequestConfig): AxiosPromise<RunResult> {
             return localVarFp.apiCompileProjectProjectIdRunPost(projectId, runRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdStatusGet(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<ProcessStatus> {
+        apiCompileProjectProjectIdStatusGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<ProcessStatus> {
             return localVarFp.apiCompileProjectProjectIdStatusGet(projectId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiCompileProjectProjectIdStopPost(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiCompileProjectProjectIdStopPost(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.apiCompileProjectProjectIdStopPost(projectId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -415,43 +415,43 @@ export const CompilerApiFactory = function (configuration?: Configuration, baseP
 export class CompilerApi extends BaseAPI {
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {CompileRequest} [compileRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiCompileProjectProjectIdCompilePost(projectId: string, compileRequest?: CompileRequest, options?: RawAxiosRequestConfig) {
+    public apiCompileProjectProjectIdCompilePost(projectId: number, compileRequest?: CompileRequest, options?: RawAxiosRequestConfig) {
         return CompilerApiFp(this.configuration).apiCompileProjectProjectIdCompilePost(projectId, compileRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {RunRequest} [runRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiCompileProjectProjectIdRunPost(projectId: string, runRequest?: RunRequest, options?: RawAxiosRequestConfig) {
+    public apiCompileProjectProjectIdRunPost(projectId: number, runRequest?: RunRequest, options?: RawAxiosRequestConfig) {
         return CompilerApiFp(this.configuration).apiCompileProjectProjectIdRunPost(projectId, runRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiCompileProjectProjectIdStatusGet(projectId: string, options?: RawAxiosRequestConfig) {
+    public apiCompileProjectProjectIdStatusGet(projectId: number, options?: RawAxiosRequestConfig) {
         return CompilerApiFp(this.configuration).apiCompileProjectProjectIdStatusGet(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiCompileProjectProjectIdStopPost(projectId: string, options?: RawAxiosRequestConfig) {
+    public apiCompileProjectProjectIdStopPost(projectId: number, options?: RawAxiosRequestConfig) {
         return CompilerApiFp(this.configuration).apiCompileProjectProjectIdStopPost(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -508,12 +508,11 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         /**
          * 
          * @param {string} fileId 
-         * @param {string} [file] 
          * @param {string} [body] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesFileIdMovePost: async (fileId: string, file?: string, body?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiFilesFileIdMovePost: async (fileId: string, body?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'fileId' is not null or undefined
             assertParamExists('apiFilesFileIdMovePost', 'fileId', fileId)
             const localVarPath = `/api/files/{fileId}/move`
@@ -528,10 +527,6 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            if (file !== undefined) {
-                localVarQueryParameter['file'] = file;
-            }
 
 
     
@@ -623,11 +618,11 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectIdGet: async (projectId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiFilesProjectIdGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiFilesProjectIdGet', 'projectId', projectId)
             const localVarPath = `/api/files/{projectId}`
@@ -656,12 +651,12 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {PathChangeRequest} [pathChangeRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectProjectIdChangeAllPathsPost: async (projectId: string, pathChangeRequest?: PathChangeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiFilesProjectProjectIdChangeAllPathsPost: async (projectId: number, pathChangeRequest?: PathChangeRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiFilesProjectProjectIdChangeAllPathsPost', 'projectId', projectId)
             const localVarPath = `/api/files/project/{projectId}/change_all_paths`
@@ -693,12 +688,12 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectProjectIdPost: async (projectId: string, createFileDto?: CreateFileDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiFilesProjectProjectIdPost: async (projectId: number, createFileDto?: CreateFileDto, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiFilesProjectProjectIdPost', 'projectId', projectId)
             const localVarPath = `/api/files/project/{projectId}`
@@ -785,13 +780,12 @@ export const FileApiFp = function(configuration?: Configuration) {
         /**
          * 
          * @param {string} fileId 
-         * @param {string} [file] 
          * @param {string} [body] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesFileIdMovePost(fileId, file, body, options);
+        async apiFilesFileIdMovePost(fileId: string, body?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesFileIdMovePost(fileId, body, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesFileIdMovePost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -824,11 +818,11 @@ export const FileApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiFilesProjectIdGet(projectId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FileMetadata>>> {
+        async apiFilesProjectIdGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<FileMetadata>>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectIdGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesProjectIdGet']?.[localVarOperationServerIndex]?.url;
@@ -836,12 +830,12 @@ export const FileApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {PathChangeRequest} [pathChangeRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiFilesProjectProjectIdChangeAllPathsPost(projectId: string, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiFilesProjectProjectIdChangeAllPathsPost(projectId: number, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectProjectIdChangeAllPathsPost(projectId, pathChangeRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesProjectProjectIdChangeAllPathsPost']?.[localVarOperationServerIndex]?.url;
@@ -849,12 +843,12 @@ export const FileApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiFilesProjectProjectIdPost(projectId: string, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+        async apiFilesProjectProjectIdPost(projectId: number, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiFilesProjectProjectIdPost(projectId, createFileDto, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['FileApi.apiFilesProjectProjectIdPost']?.[localVarOperationServerIndex]?.url;
@@ -893,13 +887,12 @@ export const FileApiFactory = function (configuration?: Configuration, basePath?
         /**
          * 
          * @param {string} fileId 
-         * @param {string} [file] 
          * @param {string} [body] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.apiFilesFileIdMovePost(fileId, file, body, options).then((request) => request(axios, basePath));
+        apiFilesFileIdMovePost(fileId: string, body?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiFilesFileIdMovePost(fileId, body, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -923,31 +916,31 @@ export const FileApiFactory = function (configuration?: Configuration, basePath?
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectIdGet(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<FileMetadata>> {
+        apiFilesProjectIdGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<FileMetadata>> {
             return localVarFp.apiFilesProjectIdGet(projectId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {PathChangeRequest} [pathChangeRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectProjectIdChangeAllPathsPost(projectId: string, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiFilesProjectProjectIdChangeAllPathsPost(projectId: number, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.apiFilesProjectProjectIdChangeAllPathsPost(projectId, pathChangeRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {CreateFileDto} [createFileDto] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiFilesProjectProjectIdPost(projectId: string, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+        apiFilesProjectProjectIdPost(projectId: number, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.apiFilesProjectProjectIdPost(projectId, createFileDto, options).then((request) => request(axios, basePath));
         },
         /**
@@ -979,14 +972,12 @@ export class FileApi extends BaseAPI {
     /**
      * 
      * @param {string} fileId 
-     * @param {string} [file] 
      * @param {string} [body] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiFilesFileIdMovePost(fileId: string, file?: string, body?: string, options?: RawAxiosRequestConfig) {
-        console.log(fileId)
-        return FileApiFp(this.configuration).apiFilesFileIdMovePost(fileId, file, body, options).then((request) => request(this.axios, this.basePath));
+    public apiFilesFileIdMovePost(fileId: string, body?: string, options?: RawAxiosRequestConfig) {
+        return FileApiFp(this.configuration).apiFilesFileIdMovePost(fileId, body, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1013,33 +1004,33 @@ export class FileApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiFilesProjectIdGet(projectId: string, options?: RawAxiosRequestConfig) {
+    public apiFilesProjectIdGet(projectId: number, options?: RawAxiosRequestConfig) {
         return FileApiFp(this.configuration).apiFilesProjectIdGet(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {PathChangeRequest} [pathChangeRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiFilesProjectProjectIdChangeAllPathsPost(projectId: string, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig) {
+    public apiFilesProjectProjectIdChangeAllPathsPost(projectId: number, pathChangeRequest?: PathChangeRequest, options?: RawAxiosRequestConfig) {
         return FileApiFp(this.configuration).apiFilesProjectProjectIdChangeAllPathsPost(projectId, pathChangeRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {CreateFileDto} [createFileDto] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiFilesProjectProjectIdPost(projectId: string, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig) {
+    public apiFilesProjectProjectIdPost(projectId: number, createFileDto?: CreateFileDto, options?: RawAxiosRequestConfig) {
         return FileApiFp(this.configuration).apiFilesProjectProjectIdPost(projectId, createFileDto, options).then((request) => request(this.axios, this.basePath));
     }
 
@@ -1158,11 +1149,11 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdDelete: async (projectId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiProjectsProjectIdDelete: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiProjectsProjectIdDelete', 'projectId', projectId)
             const localVarPath = `/api/projects/{projectId}`
@@ -1371,11 +1362,11 @@ export const ProjectApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiProjectsProjectIdDelete(projectId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiProjectsProjectIdDelete(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsProjectIdDelete(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsProjectIdDelete']?.[localVarOperationServerIndex]?.url;
@@ -1467,11 +1458,11 @@ export const ProjectApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdDelete(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiProjectsProjectIdDelete(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.apiProjectsProjectIdDelete(projectId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1549,11 +1540,11 @@ export class ProjectApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiProjectsProjectIdDelete(projectId: string, options?: RawAxiosRequestConfig) {
+    public apiProjectsProjectIdDelete(projectId: number, options?: RawAxiosRequestConfig) {
         return ProjectApiFp(this.configuration).apiProjectsProjectIdDelete(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 

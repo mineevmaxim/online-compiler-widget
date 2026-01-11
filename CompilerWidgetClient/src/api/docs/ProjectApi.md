@@ -172,7 +172,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new ProjectApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 
 const { status, data } = await apiInstance.apiProjectsProjectIdDelete(
     projectId
@@ -183,7 +183,7 @@ const { status, data } = await apiInstance.apiProjectsProjectIdDelete(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type

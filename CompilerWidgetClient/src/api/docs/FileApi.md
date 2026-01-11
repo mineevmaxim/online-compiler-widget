@@ -79,12 +79,10 @@ const configuration = new Configuration();
 const apiInstance = new FileApi(configuration);
 
 let fileId: string; // (default to undefined)
-let file: string; // (optional) (default to undefined)
 let body: string; // (optional)
 
 const { status, data } = await apiInstance.apiFilesFileIdMovePost(
     fileId,
-    file,
     body
 );
 ```
@@ -95,7 +93,6 @@ const { status, data } = await apiInstance.apiFilesFileIdMovePost(
 |------------- | ------------- | ------------- | -------------|
 | **body** | **string**|  | |
 | **fileId** | [**string**] |  | defaults to undefined|
-| **file** | [**string**] |  | (optional) defaults to undefined|
 
 
 ### Return type
@@ -242,7 +239,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new FileApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 
 const { status, data } = await apiInstance.apiFilesProjectIdGet(
     projectId
@@ -253,7 +250,7 @@ const { status, data } = await apiInstance.apiFilesProjectIdGet(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type
@@ -293,7 +290,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new FileApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 let pathChangeRequest: PathChangeRequest; // (optional)
 
 const { status, data } = await apiInstance.apiFilesProjectProjectIdChangeAllPathsPost(
@@ -307,7 +304,7 @@ const { status, data } = await apiInstance.apiFilesProjectProjectIdChangeAllPath
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **pathChangeRequest** | **PathChangeRequest**|  | |
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type
@@ -347,7 +344,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new FileApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 let createFileDto: CreateFileDto; // (optional)
 
 const { status, data } = await apiInstance.apiFilesProjectProjectIdPost(
@@ -361,7 +358,7 @@ const { status, data } = await apiInstance.apiFilesProjectProjectIdPost(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **createFileDto** | **CreateFileDto**|  | |
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type

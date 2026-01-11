@@ -1,13 +1,13 @@
-import {useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import type { EditorDocument } from "../types/EditorDocument";
 import { FileApi, ProjectApi, CompilerApi } from "../api";
 
-export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<string, string>) {
+export function useCompiler(id: number, isNew: boolean, initialFiles?: Record<string, string>) {
 
     const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const [needToCreateFiles, setNeedToCreateFiles] = useState<boolean>(isNew);
 
-    const [projectId, setProjectId] = useState<string>(id);
+    const [projectId, setProjectId] = useState<number>(id);
     const [output, setOutput] = useState<string>("");
 
     const fileApi = new FileApi();
@@ -19,13 +19,15 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
     useEffect(() => {
         if (projectId && initialFiles && !isInitialized && needToCreateFiles) {
             setDocuments([]);
-            Object.keys(initialFiles).forEach(key => {
-                
+            console.log("работаем с файлами");
 
+            Object.keys(initialFiles).forEach(key => {
                 fileApi.apiFilesProjectProjectIdPost(projectId, {
                     name: key,
                     path: key
                 }).then(res => {
+                    console.log(res);
+
                     const file: EditorDocument = {
                         id: res.data,
                         content: initialFiles[key],
@@ -34,13 +36,13 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                         name: key,
                         path: key
                     };
-                    setDocuments(docs => [...docs, file]);
+
                     fileApi.apiFilesFileIdSavePost(file.id, {
                         content: initialFiles[key],
+                    }).then(res => {
+                        setNeedToCreateFiles(false);
                     })
-                        
                 })
-                    .finally(() => setIsInitialized(true));
             });
         }
     }, [projectId, initialFiles, needToCreateFiles]);
@@ -51,8 +53,6 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
             fileApi.apiFilesProjectIdGet(projectId)
                 .then((files) => {
                     files.data.forEach(file => {
-                        
-
                         fileApi.apiFilesReadFileIdGet(file.fileId!).then(res => {
                             const document: EditorDocument = {
                                 id: file.fileId!,
@@ -64,7 +64,9 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                             };
                             setDocuments(docs => [...docs, document]);
                         })
-                            .finally(() => setIsInitialized(true));
+                            .finally(() => {
+                                setIsInitialized(true)
+                            });
                     });
                 })
 
@@ -114,7 +116,7 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
                     initialContent = "// JavaScript file";
                 }
 
-                const finalPath = path? path : "";
+                const finalPath = path ? path : "";
 
                 const newDoc: EditorDocument = {
                     id: fileId,
@@ -139,14 +141,14 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
     };
 
     const updateDocPath = (fileId: string, newPath: string) => {
-    setDocuments(prev => {
-        const newDocs = prev.map(doc => 
-            doc.id === fileId ? { ...doc, path: newPath, modified: true } : doc
-        );
-        return newDocs;
-    });
-    fileApi.apiFilesFileIdMovePost(fileId, undefined, newPath);
-};
+        setDocuments(prev => {
+            const newDocs = prev.map(doc =>
+                doc.id === fileId ? { ...doc, path: newPath, modified: true } : doc
+            );
+            return newDocs;
+        });
+        fileApi.apiFilesFileIdMovePost(fileId, newPath);
+    };
 
 
     const updateOneDocPath = (id: string, newPath: string) => {
@@ -155,24 +157,24 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         )
     }
 
-    const updatePath = (id: string, oldPath: string, newPath: string) => {
+    const updatePath = (id: number, oldPath: string, newPath: string) => {
         setDocuments(prevDocs =>
-        prevDocs.map(doc => {
-            if (doc.path?.startsWith(oldPath)) {
-                const newDocPath = doc.path.replace(oldPath, newPath);
-                return { ...doc, path: newDocPath, modified: true };
-            }
-            return doc;
-        })
-    );
-        fileApi.apiFilesProjectProjectIdChangeAllPathsPost(id, {oldPath, newPath})
+            prevDocs.map(doc => {
+                if (doc.path?.startsWith(oldPath)) {
+                    const newDocPath = doc.path.replace(oldPath, newPath);
+                    return { ...doc, path: newDocPath, modified: true };
+                }
+                return doc;
+            })
+        );
+        fileApi.apiFilesProjectProjectIdChangeAllPathsPost(id, { oldPath, newPath })
     }
 
     const updateDocument = (id: string, patch: Partial<EditorDocument>) => {
         const doc = documents.find(d => d.id === id);
         if (!doc) return;
 
-       
+
         setDocuments(docs =>
             docs.map(doc => doc.id === id ? { ...doc, ...patch, modified: true } : doc)
         );
@@ -187,7 +189,7 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
             });
         }
 
-        
+
         if (patch.modified) {
             fileApi.apiFilesFileIdSavePost(id, {
                 content: patch.content,
@@ -270,6 +272,7 @@ export function useCompiler(id: string, isNew: boolean, initialFiles?: Record<st
         stop,
         output,
         saveAll,
+        isInitialized,
         history: [],
     };
 }

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useLayoutEffect } from "react";
+import { useState, useMemo, useLayoutEffect } from "react";
 import {
     ReactFlow,
     Controls,
@@ -37,7 +37,7 @@ const initialNodes: Node[] = [
 const initialEdges: Edge[] = [];
 
 export default function App() {
-    const widgetId = "143e4577-e89b-12d3-a456-426614174000";
+    const widgetId = 45;
 
     const [isNew, setIsNew] = useState<boolean | null>(null);
 
@@ -64,10 +64,10 @@ export default function App() {
     const [nodes, setNodes] = useState<Node[]>(initialNodes);
     const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
-    const setNodeHeight = (id: string, height: number) => {
+    const setNodeHeight = (id: number, height: number) => {
         setNodes(nds =>
             nds.map(n =>
-                n.id === id ? { ...n, style: { ...n.style, height } } : n
+                n.id === id.toString() ? { ...n, style: { ...n.style, height } } : n
             )
         );
     };

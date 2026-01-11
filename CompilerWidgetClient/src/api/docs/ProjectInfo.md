@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**projectId** | **string** |  | [optional] [default to undefined]
+**projectId** | **number** |  | [optional] [default to undefined]
 **name** | **string** |  | [optional] [default to undefined]
 **fileCount** | **number** |  | [optional] [default to undefined]
 

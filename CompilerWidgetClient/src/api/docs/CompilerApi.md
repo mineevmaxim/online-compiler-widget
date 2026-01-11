@@ -26,7 +26,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new CompilerApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 let compileRequest: CompileRequest; // (optional)
 
 const { status, data } = await apiInstance.apiCompileProjectProjectIdCompilePost(
@@ -40,7 +40,7 @@ const { status, data } = await apiInstance.apiCompileProjectProjectIdCompilePost
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **compileRequest** | **CompileRequest**|  | |
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type
@@ -80,7 +80,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new CompilerApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 let runRequest: RunRequest; // (optional)
 
 const { status, data } = await apiInstance.apiCompileProjectProjectIdRunPost(
@@ -94,7 +94,7 @@ const { status, data } = await apiInstance.apiCompileProjectProjectIdRunPost(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **runRequest** | **RunRequest**|  | |
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type
@@ -133,7 +133,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new CompilerApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 
 const { status, data } = await apiInstance.apiCompileProjectProjectIdStatusGet(
     projectId
@@ -144,7 +144,7 @@ const { status, data } = await apiInstance.apiCompileProjectProjectIdStatusGet(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type
@@ -183,7 +183,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new CompilerApi(configuration);
 
-let projectId: string; // (default to undefined)
+let projectId: number; // (default to undefined)
 
 const { status, data } = await apiInstance.apiCompileProjectProjectIdStopPost(
     projectId
@@ -194,7 +194,7 @@ const { status, data } = await apiInstance.apiCompileProjectProjectIdStopPost(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **projectId** | [**string**] |  | defaults to undefined|
+| **projectId** | [**number**] |  | defaults to undefined|
 
 
 ### Return type

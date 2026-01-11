@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**projectId** | **string** |  | [optional] [default to undefined]
+**projectId** | **number** |  | [optional] [default to undefined]
 **processId** | **string** |  | [optional] [default to undefined]
 **startedAt** | **string** |  | [optional] [default to undefined]
 **uptime** | **string** |  | [optional] [default to undefined]
