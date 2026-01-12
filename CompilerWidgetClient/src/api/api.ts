@@ -23,6 +23,11 @@ import type { RequestArgs } from './base';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
+export interface BoardDto {
+    'id'?: number;
+    'name'?: string | null;
+    'parentId'?: number;
+}
 export interface CompilationError {
     'errorCode'?: string | null;
     'message'?: string | null;
@@ -106,6 +111,13 @@ export interface RunningProjectInfo {
 export interface UpdateFileDto {
     'content'?: string | null;
 }
+export interface WidgetInfoRequest {
+    'widgetId'?: number;
+    'userId'?: number;
+    'role'?: string | null;
+    'config'?: any;
+    'board'?: BoardDto;
+}
 
 /**
  * CompilerApi - axios parameter creator
@@ -135,9 +147,8 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -172,9 +183,8 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -208,8 +218,8 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -242,7 +252,6 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
             const localVarQueryParameter = {} as any;
 
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -270,8 +279,8 @@ export const CompilerApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -495,7 +504,6 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarQueryParameter = {} as any;
 
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -528,8 +536,6 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -565,9 +571,8 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -602,9 +607,8 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -638,8 +642,8 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -672,8 +676,6 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -709,9 +711,8 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -745,8 +746,8 @@ export const FileApiAxiosParamCreator = function (configuration?: Configuration)
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1071,9 +1072,8 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -1103,8 +1103,8 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1137,7 +1137,6 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
 
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1170,7 +1169,6 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarQueryParameter = {} as any;
 
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1202,8 +1200,8 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1215,11 +1213,11 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdGet: async (projectId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiProjectsProjectIdGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiProjectsProjectIdGet', 'projectId', projectId)
             const localVarPath = `/api/projects/{projectId}`
@@ -1235,8 +1233,8 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -1248,12 +1246,12 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {RenameProjectRequest} [renameProjectRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdRenamePut: async (projectId: string, renameProjectRequest?: RenameProjectRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiProjectsProjectIdRenamePut: async (projectId: number, renameProjectRequest?: RenameProjectRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiProjectsProjectIdRenamePut', 'projectId', projectId)
             const localVarPath = `/api/projects/{projectId}/rename`
@@ -1269,8 +1267,6 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
 
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -1285,11 +1281,11 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdStatsGet: async (projectId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        apiProjectsProjectIdStatsGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('apiProjectsProjectIdStatsGet', 'projectId', projectId)
             const localVarPath = `/api/projects/{projectId}/stats`
@@ -1305,11 +1301,141 @@ export const ProjectApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'text/plain,application/json,text/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} projectId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsProjectIdWidgetGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('apiProjectsProjectIdWidgetGet', 'projectId', projectId)
+            const localVarPath = `/api/projects/{projectId}/widget`
+                .replace(`{${"projectId"}}`, encodeURIComponent(String(projectId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {WidgetInfoRequest} [widgetInfoRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsWidgetGetInfoPost: async (widgetInfoRequest?: WidgetInfoRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/projects/widget/getInfo`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(widgetInfoRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} widgetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsWidgetWidgetIdGet: async (widgetId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'widgetId' is not null or undefined
+            assertParamExists('apiProjectsWidgetWidgetIdGet', 'widgetId', widgetId)
+            const localVarPath = `/api/projects/widget/{widgetId}`
+                .replace(`{${"widgetId"}}`, encodeURIComponent(String(widgetId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} widgetId 
+         * @param {WidgetInfoRequest} [widgetInfoRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsWidgetWidgetIdPut: async (widgetId: number, widgetInfoRequest?: WidgetInfoRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'widgetId' is not null or undefined
+            assertParamExists('apiProjectsWidgetWidgetIdPut', 'widgetId', widgetId)
+            const localVarPath = `/api/projects/widget/{widgetId}`
+                .replace(`{${"widgetId"}}`, encodeURIComponent(String(widgetId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(widgetInfoRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1386,11 +1512,11 @@ export const ProjectApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiProjectsProjectIdGet(projectId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProjectInfo>> {
+        async apiProjectsProjectIdGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProjectInfo>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsProjectIdGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsProjectIdGet']?.[localVarOperationServerIndex]?.url;
@@ -1398,12 +1524,12 @@ export const ProjectApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {RenameProjectRequest} [renameProjectRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiProjectsProjectIdRenamePut(projectId: string, renameProjectRequest?: RenameProjectRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+        async apiProjectsProjectIdRenamePut(projectId: number, renameProjectRequest?: RenameProjectRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsProjectIdRenamePut(projectId, renameProjectRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsProjectIdRenamePut']?.[localVarOperationServerIndex]?.url;
@@ -1411,14 +1537,63 @@ export const ProjectApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async apiProjectsProjectIdStatsGet(projectId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProjectStats>> {
+        async apiProjectsProjectIdStatsGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProjectStats>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsProjectIdStatsGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsProjectIdStatsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} projectId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiProjectsProjectIdWidgetGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsProjectIdWidgetGet(projectId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsProjectIdWidgetGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {WidgetInfoRequest} [widgetInfoRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiProjectsWidgetGetInfoPost(widgetInfoRequest?: WidgetInfoRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsWidgetGetInfoPost(widgetInfoRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsWidgetGetInfoPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} widgetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiProjectsWidgetWidgetIdGet(widgetId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsWidgetWidgetIdGet(widgetId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsWidgetWidgetIdGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} widgetId 
+         * @param {WidgetInfoRequest} [widgetInfoRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async apiProjectsWidgetWidgetIdPut(widgetId: number, widgetInfoRequest?: WidgetInfoRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.apiProjectsWidgetWidgetIdPut(widgetId, widgetInfoRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ProjectApi.apiProjectsWidgetWidgetIdPut']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -1476,31 +1651,68 @@ export const ProjectApiFactory = function (configuration?: Configuration, basePa
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdGet(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<ProjectInfo> {
+        apiProjectsProjectIdGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<ProjectInfo> {
             return localVarFp.apiProjectsProjectIdGet(projectId, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {RenameProjectRequest} [renameProjectRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdRenamePut(projectId: string, renameProjectRequest?: RenameProjectRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+        apiProjectsProjectIdRenamePut(projectId: number, renameProjectRequest?: RenameProjectRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.apiProjectsProjectIdRenamePut(projectId, renameProjectRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @param {string} projectId 
+         * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        apiProjectsProjectIdStatsGet(projectId: string, options?: RawAxiosRequestConfig): AxiosPromise<ProjectStats> {
+        apiProjectsProjectIdStatsGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<ProjectStats> {
             return localVarFp.apiProjectsProjectIdStatsGet(projectId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} projectId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsProjectIdWidgetGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiProjectsProjectIdWidgetGet(projectId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {WidgetInfoRequest} [widgetInfoRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsWidgetGetInfoPost(widgetInfoRequest?: WidgetInfoRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiProjectsWidgetGetInfoPost(widgetInfoRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} widgetId 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsWidgetWidgetIdGet(widgetId: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiProjectsWidgetWidgetIdGet(widgetId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} widgetId 
+         * @param {WidgetInfoRequest} [widgetInfoRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        apiProjectsWidgetWidgetIdPut(widgetId: number, widgetInfoRequest?: WidgetInfoRequest, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.apiProjectsWidgetWidgetIdPut(widgetId, widgetInfoRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1560,33 +1772,74 @@ export class ProjectApi extends BaseAPI {
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiProjectsProjectIdGet(projectId: string, options?: RawAxiosRequestConfig) {
+    public apiProjectsProjectIdGet(projectId: number, options?: RawAxiosRequestConfig) {
         return ProjectApiFp(this.configuration).apiProjectsProjectIdGet(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {RenameProjectRequest} [renameProjectRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiProjectsProjectIdRenamePut(projectId: string, renameProjectRequest?: RenameProjectRequest, options?: RawAxiosRequestConfig) {
+    public apiProjectsProjectIdRenamePut(projectId: number, renameProjectRequest?: RenameProjectRequest, options?: RawAxiosRequestConfig) {
         return ProjectApiFp(this.configuration).apiProjectsProjectIdRenamePut(projectId, renameProjectRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @param {string} projectId 
+     * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public apiProjectsProjectIdStatsGet(projectId: string, options?: RawAxiosRequestConfig) {
+    public apiProjectsProjectIdStatsGet(projectId: number, options?: RawAxiosRequestConfig) {
         return ProjectApiFp(this.configuration).apiProjectsProjectIdStatsGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} projectId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiProjectsProjectIdWidgetGet(projectId: number, options?: RawAxiosRequestConfig) {
+        return ProjectApiFp(this.configuration).apiProjectsProjectIdWidgetGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {WidgetInfoRequest} [widgetInfoRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiProjectsWidgetGetInfoPost(widgetInfoRequest?: WidgetInfoRequest, options?: RawAxiosRequestConfig) {
+        return ProjectApiFp(this.configuration).apiProjectsWidgetGetInfoPost(widgetInfoRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} widgetId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiProjectsWidgetWidgetIdGet(widgetId: number, options?: RawAxiosRequestConfig) {
+        return ProjectApiFp(this.configuration).apiProjectsWidgetWidgetIdGet(widgetId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} widgetId 
+     * @param {WidgetInfoRequest} [widgetInfoRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public apiProjectsWidgetWidgetIdPut(widgetId: number, widgetInfoRequest?: WidgetInfoRequest, options?: RawAxiosRequestConfig) {
+        return ProjectApiFp(this.configuration).apiProjectsWidgetWidgetIdPut(widgetId, widgetInfoRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
