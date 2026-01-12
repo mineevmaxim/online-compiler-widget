@@ -1,6 +1,6 @@
 // src/components/CompilerWidget.tsx
 import React, { memo, useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { Handle, Position, NodeResizer, useReactFlow } from '@xyflow/react';
+import { Handle, Position, NodeResizer, useReactFlow, type NodeProps } from '@xyflow/react';
 import { FileExplorer } from './FileExplorer';
 import { MonacoEditorWrapper } from './MonacoEditorWrapper';
 import { OutputPanel } from './OutputPanel';
@@ -38,10 +38,9 @@ interface CompilerWidgetProps {
         language?: 'csharp' | 'js';
     };
     setNodeHeight?: (id: number, height: number) => void;
-    getInfo?: (info: GetInfoModel) => void; 
 }
 
-const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNodeHeight }) => {
+const CompilerWidget: React.FC<NodeProps> = ({ id, isNew, data, setNodeHeight }) => {
     const {
         documents,
         selectedDocument,
@@ -58,10 +57,8 @@ const CompilerWidget: React.FC<CompilerWidgetProps> = ({ id, isNew, data, setNod
         history,
         run,
         stop,
-        saveAll,
-        isInitialized
-    } = useCompiler(
-        id, isNew, data?.initialFiles || {
+        saveAll    } = useCompiler(
+        +id, isNew, data?.initialFiles || {
             'Program.cs': '// Write your code here\nConsole.WriteLine("Hello, World!");',
         }
     );
