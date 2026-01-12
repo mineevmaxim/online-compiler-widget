@@ -9,399 +9,256 @@ namespace Compilation;
 
 public class CompilerService(ILogger<CompilerService> logger) : IDisposable
 {
-	private readonly List<string> tempDirectories = [];
-	private const int TimeoutSeconds = 30;
-	private static readonly Dictionary<string, Process> ActiveRunProcesses = new();
+    private readonly List<string> tempDirectories = new();
+    private const int TimeoutSeconds = 30;
 
-	public async Task<CompilationResult> RunCompilerContainer(string sourcePath, string mainFile)
-	{
-		logger.LogInformation("Запуск проекта {MainFile} из {SourcePath}", mainFile, sourcePath);
+    // Процессы, которые можно остановить
+    private static readonly Dictionary<string, Process> ActiveRunProcesses = new();
 
-		var tempDir = CreateTempDirectory();
-		tempDirectories.Add(tempDir);
+    /// <summary>
+    /// Запуск проекта (с компиляцией и запуском)
+    /// </summary>
+    public async Task<CompilationResult> RunCompilerContainer(
+        string sourcePath,
+        string mainFile,
+        string processId,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Запуск проекта {MainFile} из {SourcePath}", mainFile, sourcePath);
 
-		try
-		{
-			CopyDirectory(sourcePath, tempDir, true);
-			var projectPath = Path.Combine(tempDir, mainFile);
+        var tempDir = CreateTempDirectory();
+        tempDirectories.Add(tempDir);
 
-			logger.LogInformation("Компиляция проекта...");
-			var compileResult = await ExecuteDotnetCommand(
-				"build",
-				$"\"{projectPath}\" --verbosity quiet --nologo --configuration Release",
-				tempDir,
-				TimeSpan.FromSeconds(TimeoutSeconds));
+        try
+        {
+            CopyDirectory(sourcePath, tempDir, true);
+            var projectPath = Path.Combine(tempDir, mainFile);
 
-			if (!compileResult.Success)
-			{
-				return new CompilationResult
-				{
-					Success = false,
-					Output = "",
-					Errors =
-					[
-						new CompilationError
-						{
-							ErrorCode = "BUILD_ERROR",
-							Message = compileResult.Output
-						}
-					]
-				};
-			}
+            logger.LogInformation("Компиляция проекта...");
+            var compileResult = await ExecuteDotnetCommand(
+                "build",
+                $"\"{projectPath}\" --verbosity quiet --nologo --configuration Release",
+                tempDir,
+                TimeSpan.FromSeconds(TimeoutSeconds),
+                processId,
+                cancellationToken);
 
-			logger.LogInformation("Запуск проекта...");
-			var processId = Guid.NewGuid().ToString();
-			var runResult = await ExecuteDotnetCommand(
-				"run",
-				$"\"{projectPath}\" --no-build --verbosity quiet --configuration Release",
-				tempDir,
-				TimeSpan.FromSeconds(TimeoutSeconds),
-				processId);
+            if (!compileResult.Success)
+            {
+                return new CompilationResult
+                {
+                    Success = false,
+                    Output = "",
+                    Errors = new List<CompilationError>
+                    {
+                        new CompilationError { ErrorCode = "BUILD_ERROR", Message = compileResult.Output }
+                    }
+                };
+            }
 
-			return new CompilationResult
-			{
-				Success = runResult.ExitCode == 0,
-				Output = runResult.Output,
-				Errors = runResult.ExitCode != 0
-					?
-					[
-						new CompilationError
-						{
-							ErrorCode = "RUNTIME_ERROR",
-							Message = runResult.Output
-						}
-					]
-					: []
-			};
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Ошибка при запуске проекта {MainFile}", mainFile);
-			return new CompilationResult
-			{
-				Success = false,
-				Output = "",
-				Errors =
-				[
-					new CompilationError
-					{
-						ErrorCode = "EXECUTION_ERROR",
-						Message = ex.Message
-					}
-				]
-			};
-		}
-	}
+            logger.LogInformation("Запуск проекта...");
+            var runResult = await ExecuteDotnetCommand(
+                "run",
+                $"\"{projectPath}\" --no-build --verbosity quiet --configuration Release",
+                tempDir,
+                TimeSpan.FromSeconds(TimeoutSeconds),
+                processId,
+                cancellationToken);
 
-	public async Task<CompilationResult> CompileOnly(string sourcePath, string mainFile)
-	{
-		logger.LogInformation("Компиляция проекта {MainFile} из {SourcePath}", mainFile, sourcePath);
+            return new CompilationResult
+            {
+                Success = runResult.ExitCode == 0,
+                Output = runResult.Output,
+                Errors = runResult.ExitCode != 0
+                    ? new List<CompilationError> { new CompilationError { ErrorCode = "RUNTIME_ERROR", Message = runResult.Output } }
+                    : new List<CompilationError>()
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogInformation("Процесс {ProcessId} был отменен", processId);
+            StopProcess(processId);
+            return new CompilationResult
+            {
+                Success = false,
+                Output = "Процесс был отменен",
+                Errors = new List<CompilationError>()
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при запуске проекта {MainFile}", mainFile);
+            return new CompilationResult
+            {
+                Success = false,
+                Output = "",
+                Errors = new List<CompilationError>
+                {
+                    new CompilationError { ErrorCode = "EXECUTION_ERROR", Message = ex.Message }
+                }
+            };
+        }
+    }
 
-		var tempDir = CreateTempDirectory();
-		tempDirectories.Add(tempDir);
+    /// <summary>
+    /// Метод остановки процесса
+    /// </summary>
+    public static void StopProcess(string processId)
+    {
+        if (string.IsNullOrWhiteSpace(processId)) return;
+        if (!ActiveRunProcesses.TryGetValue(processId, out var process)) return;
 
-		try
-		{
-			CopyDirectory(sourcePath, tempDir, true);
-			var projectPath = Path.Combine(tempDir, mainFile);
+        try
+        {
+            if (!process.HasExited)
+                process.Kill(true);
+        }
+        catch { /* игнорируем ошибки */ }
+        finally
+        {
+            ActiveRunProcesses.Remove(processId);
+        }
+    }
 
-			var extension = Path.GetExtension(mainFile).ToLowerInvariant();
+    /// <summary>
+    /// Выполнение dotnet команд с поддержкой CancellationToken
+    /// </summary>
+    private async Task<(bool Success, string Output, int ExitCode)> ExecuteDotnetCommand(
+        string command,
+        string arguments,
+        string workingDirectory,
+        TimeSpan timeout,
+        string? processId = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            logger.LogDebug("Выполнение: dotnet {Command} {Arguments}", command, arguments);
 
-			switch (extension)
-			{
-				case ".csproj":
-				{
-					var result = await ExecuteDotnetCommand(
-						"build",
-						$"\"{projectPath}\" --verbosity quiet --nologo",
-						tempDir,
-						TimeSpan.FromSeconds(TimeoutSeconds));
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"{command} {arguments}",
+                WorkingDirectory = workingDirectory,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8
+            };
 
-					return new CompilationResult
-					{
-						Success = result.ExitCode == 0,
-						Output = result.Output,
-						Errors = result.ExitCode != 0
-							?
-							[
-								new CompilationError
-								{
-									ErrorCode = "COMPILATION_ERROR",
-									Message = result.Output
-								}
-							]
-							: []
-					};
-				}
-				case ".cs":
-					return await CompileSingleFileWithRoslyn(tempDir, mainFile);
-				default:
-					return new CompilationResult
-					{
-						Success = false,
-						Output = "",
-						Errors =
-						[
-							new CompilationError
-							{
-								ErrorCode = "UNSUPPORTED_FORMAT",
-								Message = $"Неподдерживаемый формат файла: {extension}"
-							}
-						]
-					};
-			}
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Ошибка при компиляции проекта {MainFile}", mainFile);
-			return new CompilationResult
-			{
-				Success = false,
-				Output = "",
-				Errors =
-				[
-					new CompilationError
-					{
-						ErrorCode = "COMPILATION_ERROR",
-						Message = ex.Message
-					}
-				]
-			};
-		}
-	}
+            var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
 
-	private async Task<CompilationResult> CompileSingleFileWithRoslyn(string sourcePath, string mainFile)
-	{
-		try
-		{
-			var mainFilePath = Path.Combine(sourcePath, mainFile);
-			var mainSourceCode = await File.ReadAllTextAsync(mainFilePath);
+            var outputBuilder = new StringBuilder();
+            var errorBuilder = new StringBuilder();
 
-			var syntaxTree = CSharpSyntaxTree.ParseText(
-				mainSourceCode,
-				path: mainFilePath,
-				encoding: Encoding.UTF8);
+            process.OutputDataReceived += (_, e) => { if (e.Data != null) outputBuilder.AppendLine(e.Data); };
+            process.ErrorDataReceived += (_, e) => { if (e.Data != null) errorBuilder.AppendLine(e.Data); };
 
-			var csFiles = Directory.GetFiles(sourcePath, "*.cs", SearchOption.AllDirectories);
-			var syntaxTrees = new List<SyntaxTree> { syntaxTree };
+            if (!process.Start())
+                return (false, "Не удалось запустить процесс dotnet", 1);
 
-			foreach (var csFile in csFiles)
-			{
-				if (csFile == mainFilePath) continue;
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
-				var additionalCode = await File.ReadAllTextAsync(csFile);
-				var additionalTree = CSharpSyntaxTree.ParseText(
-					additionalCode,
-					path: csFile,
-					encoding: Encoding.UTF8);
-				syntaxTrees.Add(additionalTree);
-			}
+            if (!string.IsNullOrWhiteSpace(processId))
+                ActiveRunProcesses[processId] = process;
 
-			var references = new[]
-			{
-				MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Microsoft.CSharp.RuntimeBinder.CSharpArgumentInfo).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location)
-			};
+            var tcs = new TaskCompletionSource<int>();
+            process.Exited += (_, _) => tcs.TrySetResult(process.ExitCode);
 
-			var compilation = CSharpCompilation.Create(
-				assemblyName: Path.GetFileNameWithoutExtension(mainFile),
-				syntaxTrees: syntaxTrees,
-				references: references,
-				options: new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+            using (cancellationToken.Register(() =>
+            {
+                if (!process.HasExited)
+                {
+                    try { process.Kill(true); } catch { }
+                }
+            }))
+            {
+                var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout, cancellationToken));
+                if (completedTask != tcs.Task)
+                {
+                    try { process.Kill(true); } catch { }
+                    return (false, $"Процесс превысил таймаут ({timeout.TotalSeconds} сек)", 1);
+                }
+            }
 
-			var outputPath = Path.Combine(sourcePath, Path.GetFileNameWithoutExtension(mainFile) + ".dll");
-			var emitResult = compilation.Emit(outputPath);
+            var output = outputBuilder.ToString();
+            var error = errorBuilder.ToString();
+            var fullOutput = string.IsNullOrEmpty(error) ? output : $"{output}\n{error}";
 
-			if (emitResult.Success)
-			{
-				return new CompilationResult
-				{
-					Success = true,
-					Output = $"Компиляция успешно завершена. Сборка: {outputPath}",
-					Errors = []
-				};
-			}
+            ActiveRunProcesses.Remove(processId);
 
-			var errors = emitResult.Diagnostics
-				.Where(d => d.Severity == DiagnosticSeverity.Error)
-				.Select(d => new CompilationError(d))
-				.ToList();
+            return (process.ExitCode == 0, fullOutput.Trim(), process.ExitCode);
+        }
+        catch (OperationCanceledException)
+        {
+            return (false, "Процесс был отменен", 1);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Ошибка выполнения команды: {ex.Message}", 1);
+        }
+    }
 
-			return new CompilationResult
-			{
-				Success = false,
-				Output = "Ошибки компиляции:",
-				Errors = errors
-			};
-		}
-		catch (Exception ex)
-		{
-			return new CompilationResult
-			{
-				Success = false,
-				Output = "",
-				Errors =
-				[
-					new CompilationError
-					{
-						ErrorCode = "ROSLYN_COMPILATION_ERROR",
-						Message = ex.Message
-					}
-				]
-			};
-		}
-	}
-	
-	public static void StopProcess(string processId)
-	{
-		if (!ActiveRunProcesses.TryGetValue(processId, out var process) || process.HasExited) return;
-		try
-		{
-			process.Kill(true);
-			ActiveRunProcesses.Remove(processId);
-		}
-		catch { /* ignore */ }
-	}
+    private static string CreateTempDirectory()
+    {
+        var tempPath = Path.GetTempPath();
+        var randomDir = Path.Combine(tempPath, "compilation_" + Guid.NewGuid().ToString()[..8]);
+        Directory.CreateDirectory(randomDir);
+        return randomDir;
+    }
 
-	private async Task<(bool Success, string Output, int ExitCode)> ExecuteDotnetCommand(
-		string command,
-		string arguments,
-		string workingDirectory,
-		TimeSpan timeout,
-		string? processId = null)
-	{
-		try
-		{
-			logger.LogDebug("Выполнение: dotnet {Command} {Arguments}", command, arguments);
+    private static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
+    {
+        var dir = new DirectoryInfo(sourceDir);
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
 
-			var startInfo = new ProcessStartInfo
-			{
-				FileName = "dotnet",
-				Arguments = $"{command} {arguments}",
-				WorkingDirectory = workingDirectory,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				UseShellExecute = false,
-				CreateNoWindow = true,
-				StandardOutputEncoding = Encoding.UTF8,
-				StandardErrorEncoding = Encoding.UTF8
-			};
+        Directory.CreateDirectory(destinationDir);
 
-			using var process = new Process();
-			process.StartInfo = startInfo;
+        foreach (var file in dir.GetFiles())
+            file.CopyTo(Path.Combine(destinationDir, file.Name), true);
 
-			var outputBuilder = new StringBuilder();
-			var errorBuilder = new StringBuilder();
+        if (!recursive) return;
 
-			process.OutputDataReceived += (_, e) =>
-			{
-				if (!string.IsNullOrEmpty(e.Data))
-					outputBuilder.AppendLine(e.Data);
-			};
+        foreach (var subDir in dir.GetDirectories())
+        {
+            CopyDirectory(subDir.FullName, Path.Combine(destinationDir, subDir.Name), true);
+        }
+    }
 
-			process.ErrorDataReceived += (_, e) =>
-			{
-				if (!string.IsNullOrEmpty(e.Data))
-					errorBuilder.AppendLine(e.Data);
-			};
+    public void Dispose()
+    {
+        foreach (var tempDir in tempDirectories.ToList())
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        try
+                        {
+                            Directory.Delete(tempDir, true);
+                            tempDirectories.Remove(tempDir);
+                            logger.LogDebug("Удалена временная директория: {TempDir}", tempDir);
+                            break;
+                        }
+                        catch (IOException) when (i < 2)
+                        {
+                            Thread.Sleep(100);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Не удалось удалить временную директорию: {TempDir}", tempDir);
+            }
+        }
 
-			if (!process.Start())
-				return (false, "Не удалось запустить процесс dotnet", 1);
-			
-			if (!string.IsNullOrEmpty(processId) && command == "run")
-			{
-				ActiveRunProcesses[processId] = process;
-			}
-
-			process.BeginOutputReadLine();
-			process.BeginErrorReadLine();
-
-			var completed = await Task.Run(() => process.WaitForExit((int)timeout.TotalMilliseconds));
-
-			if (!completed)
-			{
-				process.Kill(true);
-				return (false, $"Процесс превысил таймаут ({timeout.TotalSeconds} сек)", 1);
-			}
-
-			await Task.Delay(100);
-
-			var output = outputBuilder.ToString();
-			var error = errorBuilder.ToString();
-			var fullOutput = string.IsNullOrEmpty(error) ? output : $"{output}\n{error}";
-
-			return (process.ExitCode == 0, fullOutput.Trim(), process.ExitCode);
-		}
-		catch (Exception ex)
-		{
-			return (false, $"Ошибка выполнения команды: {ex.Message}", 1);
-		}
-	}
-
-	private static string CreateTempDirectory()
-	{
-		var tempPath = Path.GetTempPath();
-		var randomDir = Path.Combine(tempPath, "compilation_" + Guid.NewGuid().ToString()[..8]);
-		Directory.CreateDirectory(randomDir);
-		return randomDir;
-	}
-
-	private static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
-	{
-		var dir = new DirectoryInfo(sourceDir);
-
-		if (!dir.Exists)
-			throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
-
-		Directory.CreateDirectory(destinationDir);
-
-		foreach (var file in dir.GetFiles())
-		{
-			var targetPath = Path.Combine(destinationDir, file.Name);
-			file.CopyTo(targetPath, true);
-		}
-
-		if (!recursive) return;
-		foreach (var subDir in dir.GetDirectories())
-		{
-			var newDestinationDir = Path.Combine(destinationDir, subDir.Name);
-			CopyDirectory(subDir.FullName, newDestinationDir, true);
-		}
-	}
-
-	public void Dispose()
-	{
-		foreach (var tempDir in tempDirectories.ToList())
-		{
-			try
-			{
-				if (Directory.Exists(tempDir))
-				{
-					for (int i = 0; i < 3; i++)
-					{
-						try
-						{
-							Directory.Delete(tempDir, true);
-							tempDirectories.Remove(tempDir);
-							logger.LogDebug("Удалена временная директория: {TempDir}", tempDir);
-							break;
-						}
-						catch (IOException) when (i < 2)
-						{
-							Thread.Sleep(100);
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				logger.LogWarning(ex, "Не удалось удалить временную директорию: {TempDir}", tempDir);
-			}
-		}
-
-		GC.SuppressFinalize(this);
-	}
+        GC.SuppressFinalize(this);
+    }
 }

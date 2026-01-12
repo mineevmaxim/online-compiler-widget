@@ -17,98 +17,75 @@ public class CompilerController(
 	private static readonly Dictionary<long, RunningProcessInfo> RunningProcesses = new();
 
 	[HttpPost("project/{projectId:long}/run")]
-	public async Task<ActionResult<RunResult>> Run(long projectId, [FromBody] RunRequest request)
-	{
-		try
-		{
-			logger.LogInformation("Запуск проекта {ProjectId}", projectId);
+    public async Task<ActionResult<RunResult>> Run(long projectId, [FromBody] RunRequest request)
+    {
+        try
+        {
+            if (RunningProcesses.ContainsKey(projectId))
+                return Conflict(new { Error = "Проект уже запущен" });
 
-			if (RunningProcesses.ContainsKey(projectId))
-				return Conflict(new { Error = "Проект уже запущен" });
+            var projectFiles = fileService.GetProjectFiles(projectId).ToList();
+            if (!projectFiles.Any())
+                return NotFound(new { Error = "Проект не найден" });
 
-			var projectFiles = fileService.GetProjectFiles(projectId).ToList();
-			if (!projectFiles.Any())
-				return NotFound(new { Error = "Проект не найден или не содержит файлов" });
+            var mainFile = FindMainFile(projectFiles, request.MainFile);
+            if (string.IsNullOrEmpty(mainFile))
+                return BadRequest(new { Error = "Не найден основной файл проекта" });
 
-			var mainFile = FindMainFile(projectFiles, request.MainFile);
-			if (string.IsNullOrEmpty(mainFile))
-				return BadRequest(new { Error = "Не найден основной файл проекта (.csproj или .cs)" });
+            var tempPath = CreateTempProjectDirectory(projectId, projectFiles);
 
-			var tempPath = CreateTempProjectDirectory(projectId, projectFiles);
+            var processId = Guid.NewGuid().ToString();
+            var cts = new CancellationTokenSource();
 
-			var result = await compilerService.RunCompilerContainer(tempPath, mainFile);
+            var processInfo = new RunningProcessInfo
+            {
+                ProjectId = projectId,
+                ProcessId = processId,
+                TempDirectory = tempPath,
+                StartedAt = DateTime.UtcNow,
+                CancellationTokenSource = cts
+            };
 
-			var processInfo = new RunningProcessInfo
-			{
-				ProjectId = projectId,
-				StartedAt = DateTime.UtcNow,
-				TempDirectory = tempPath,
-				ProcessId = Guid.NewGuid().ToString()
-			};
+            RunningProcesses[projectId] = processInfo;
 
-			RunningProcesses[projectId] = processInfo;
+            var result = await compilerService.RunCompilerContainer(tempPath, mainFile, processId, cts.Token);
 
-			logger.LogInformation("Проект {ProjectId} запущен успешно", projectId);
+            // Авто-очистка
+            RunningProcesses.Remove(projectId);
+            try { if (Directory.Exists(tempPath)) Directory.Delete(tempPath, true); } catch { }
 
-			return Ok(new RunResult
-			{
-				Success = result.Success,
-				Output = result.Output,
-				Errors = result.Errors.ToList(),
-				ProcessId = processInfo.ProcessId,
-				ProjectId = projectId,
-				StartedAt = processInfo.StartedAt
-			});
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Ошибка при запуске проекта {ProjectId}", projectId);
-			return StatusCode(500, new { Error = ex.Message });
-		}
-	}
+            return Ok(new RunResult
+            {
+                Success = result.Success,
+                Output = result.Output,
+                Errors = result.Errors.ToList(),
+                ProjectId = projectId,
+                ProcessId = processId,
+                StartedAt = processInfo.StartedAt
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ошибка при запуске проекта {ProjectId}", projectId);
+            return StatusCode(500, new { Error = ex.Message });
+        }
+    }
 
-	[HttpPost("project/{projectId:long}/stop")]
-	public Task<ActionResult> Stop(long projectId)
-	{
-		try
-		{
-			logger.LogInformation("Остановка проекта {ProjectId}", projectId);
+    [HttpPost("project/{projectId:long}/stop")]
+    public ActionResult Stop(long projectId)
+    {
+        if (!RunningProcesses.TryGetValue(projectId, out var processInfo))
+            return NotFound(new { Error = "Проект не запущен" });
 
-			if (!RunningProcesses.TryGetValue(projectId, out var processInfo))
-				return Task.FromResult<ActionResult>(NotFound(new { Error = "Проект не запущен" }));
+        processInfo.CancellationTokenSource?.Cancel();
+        CompilerService.StopProcess(processInfo.ProcessId);
 
-			CompilerService.StopProcess(processInfo.ProcessId);
-			logger.LogInformation("Процесс {ProcessId} остановлен", processInfo.ProcessId);
+        try { if (Directory.Exists(processInfo.TempDirectory)) Directory.Delete(processInfo.TempDirectory, true); } catch { }
 
-			try
-			{
-				if (Directory.Exists(processInfo.TempDirectory))
-					Directory.Delete(processInfo.TempDirectory, true);
-			}
-			catch (Exception ex)
-			{
-				logger.LogWarning(ex, "Не удалось удалить временную директорию {Directory}",
-					processInfo.TempDirectory);
-			}
+        RunningProcesses.Remove(projectId);
 
-			RunningProcesses.Remove(projectId);
-
-			logger.LogInformation("Проект {ProjectId} остановлен полностью", projectId);
-
-			return Task.FromResult<ActionResult>(Ok(new
-			{
-				Message = "Проект остановлен",
-				ProjectId = projectId,
-				ProcessId = processInfo.ProcessId,
-				StoppedAt = DateTime.UtcNow
-			}));
-		}
-		catch (Exception ex)
-		{
-			logger.LogError(ex, "Ошибка при остановке проекта {ProjectId}", projectId);
-			return Task.FromResult<ActionResult>(StatusCode(500, new { Error = ex.Message }));
-		}
-	}
+        return Ok(new { Message = "Проект остановлен", ProjectId = projectId, ProcessId = processInfo.ProcessId });
+    }
 
 
 	[HttpGet("project/{projectId:long}/status")]
@@ -159,8 +136,20 @@ public class CompilerController(
 			var mainFile = FindMainFile(projectFiles, request.MainFile);
 			if (string.IsNullOrEmpty(mainFile))
 				return BadRequest(new { Error = "Не найден .csproj файл" });
+			
+			var processId = Guid.NewGuid().ToString();
+			var processInfo = new RunningProcessInfo
+			{
+				ProjectId = projectId,
+				StartedAt = DateTime.UtcNow,
+				TempDirectory = tempPath,
+				ProcessId = processId
+			};
 
-			var result = await compilerService.RunCompilerContainer(tempPath, mainFile);
+			// Сохраняем в словарь
+			RunningProcesses[projectId] = processInfo;
+
+			var result = await compilerService.RunCompilerContainer(tempPath, mainFile, processId);
 
 			try
 			{
