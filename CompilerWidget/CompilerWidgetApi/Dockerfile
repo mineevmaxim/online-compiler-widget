@@ -16,5 +16,12 @@ RUN dotnet publish "CompilerWidgetApi.csproj" -c Release -o /app/publish /p:UseA
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-EXPOSE 5240
+
+# ИЗМЕНИ ЭТУ СТРОКУ:
+EXPOSE 80  # Было 5240
+
+# Добавь переменные окружения
+ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:80
+
 ENTRYPOINT ["dotnet", "CompilerWidgetApi.dll"]

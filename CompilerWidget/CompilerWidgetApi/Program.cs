@@ -5,18 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
-var assemblyName = typeof(Program).Assembly.GetName().Name;
 
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowAll", policy =>
-	{
-		policy.AllowAnyOrigin()
-			.AllowAnyMethod()
-			.AllowAnyHeader();
-	});
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 });
 
 builder.Services.AddSingleton<CSharpCompilerService>();
@@ -24,20 +21,19 @@ builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<CompilerService>();
 
-var sqlConnectionString = configuration.GetConnectionString("DataAccessPostgreSqlProvider");
+var sqlConnectionString =
+    configuration.GetConnectionString("DataAccessPostgreSqlProvider");
 
 builder.Services.AddDbContext<FileStorageDbContext>(options =>
-	options.UseNpgsql(
-		sqlConnectionString,
-		b => b.MigrationsAssembly(assemblyName)
-	)
+    options.UseNpgsql(
+        sqlConnectionString,
+        x => x.MigrationsAssembly("FileStorage")
+    )
 );
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddDbContext<FileStorageDbContext>(options => options.UseNpgsql(sqlConnectionString));
 
 var app = builder.Build();
 
@@ -47,18 +43,18 @@ app.UseSwaggerUI();
 app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
-	app.MapOpenApi();
+    app.MapOpenApi();
 
 app.UseHttpsRedirection();
-
 app.MapControllers();
 
-if (app.Environment.IsDevelopment())
+
+using (var scope = app.Services.CreateScope())
 {
-	using var scope = app.Services.CreateScope();
-	var context = scope.ServiceProvider.GetRequiredService<FileStorageDbContext>();
-	context.Database.Migrate();  // 🔥 СОЗДАСТ ВСЕ ТАБЛИЦЫ!
+    var context = scope.ServiceProvider
+        .GetRequiredService<FileStorageDbContext>();
+
+    context.Database.Migrate();
 }
 
 app.Run();
-

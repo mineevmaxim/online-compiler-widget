@@ -2,6 +2,10 @@
 
 public interface IProjectService
 {
+	Task<WidgetInfo?> GetWidgetInfoAsync(long widgetId);
+	Task<bool> UpdateWidgetInfoAsync(WidgetInfo widgetInfo);
+	
+	Task<object> ProcessWidgetInfoAsync(WidgetInfo widgetInfo);
 	/// <summary>
 	/// Создает новый проект
 	/// </summary>

@@ -66,6 +66,40 @@ namespace FileStorage.Migrations
                     b.ToTable("ProjectFiles");
                 });
 
+            modelBuilder.Entity("FileStorage.WidgetInfo", b =>
+                {
+                    b.Property<long>("WidgetId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("WidgetId"));
+
+                    b.Property<long>("BoardId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("BoardName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("BoardParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Config")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("WidgetId");
+
+                    b.ToTable("WidgetInfos");
+                });
+
             modelBuilder.Entity("FileStorage.ProjectFile", b =>
                 {
                     b.HasOne("FileStorage.Project", "Project")

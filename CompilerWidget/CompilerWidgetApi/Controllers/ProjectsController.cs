@@ -1,4 +1,5 @@
-﻿using CompilerWidgetApi.Dto;
+﻿using System.Text.Json;
+using CompilerWidgetApi.Dto;
 using FileStorage;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,6 +11,118 @@ public class ProjectController(
 	IProjectService projectService,
 	ILogger<ProjectController> logger) : ControllerBase
 {
+	[HttpGet("widget/{widgetId:long}")]
+	public async Task<ActionResult<object>> GetWidget(long widgetId)
+	{
+		try
+		{
+			var widgetInfo = await projectService.GetWidgetInfoAsync(widgetId);
+        
+			if (widgetInfo == null)
+				return NotFound(new { Error = "Виджет не найден" });
+        
+			return Ok(new 
+			{
+				WidgetId = widgetInfo.WidgetId,
+				UserId = widgetInfo.UserId,
+				Role = widgetInfo.Role,
+				Config = JsonSerializer.Deserialize<object>(widgetInfo.Config),
+				Board = new 
+				{
+					Id = widgetInfo.BoardId,
+					Name = widgetInfo.BoardName,
+					ParentId = widgetInfo.BoardParentId
+				}
+			});
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при получении информации о виджете {WidgetId}", widgetId);
+			return StatusCode(500, new { Error = ex.Message });
+		}
+	}
+
+
+	[HttpGet("{projectId:long}/widget")]
+	public async Task<ActionResult<object>> GetProjectWidgetInfo(long projectId)
+	{
+		return await GetWidget(projectId);
+	}
+	
+	[HttpPut("widget/{widgetId:long}")]
+	public async Task<ActionResult<object>> UpdateWidget(
+		[FromRoute] long widgetId,
+		[FromBody] WidgetInfoRequest request)
+	{
+		try
+		{
+			// Проверяем, что widgetId в пути совпадает с widgetId в теле
+			if (widgetId != request.WidgetId)
+			{
+				return BadRequest(new { Error = "WidgetId в пути не совпадает с WidgetId в теле запроса" });
+			}
+        
+			var widgetInfo = new WidgetInfo
+			{
+				WidgetId = request.WidgetId,
+				UserId = request.UserId,
+				Role = request.Role,
+				Config = JsonSerializer.Serialize(request.Config),
+				BoardId = request.Board.Id,
+				BoardName = request.Board.Name,
+				BoardParentId = request.Board.ParentId
+			};
+        
+			var success = await projectService.UpdateWidgetInfoAsync(widgetInfo);
+        
+			if (!success)
+				return NotFound(new { Error = "Виджет не найден" });
+        
+			return Ok(new 
+			{
+				Message = "Информация о виджете обновлена",
+				WidgetId = request.WidgetId
+			});
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при обновлении информации о виджете {WidgetId}", widgetId);
+			return StatusCode(500, new { Error = ex.Message });
+		}
+	}
+	
+	[HttpPost("widget/getInfo")]
+	public async Task<ActionResult<object>> GetWidgetInfo([FromBody] WidgetInfoRequest request)
+	{
+		try
+		{
+			// Создаем проект с помощью GetOrCreateProjectAsync (widgetId = projectId)
+			await projectService.GetOrCreateProjectAsync(request.WidgetId);
+
+			// Преобразуем DTO в модель для сервиса
+			var widgetInfo = new WidgetInfo
+			{
+				WidgetId = request.WidgetId,
+				UserId = request.UserId,
+				Role = request.Role,
+				Config = JsonSerializer.Serialize(request.Config),
+				BoardId = request.Board.Id,
+				BoardName = request.Board.Name,
+				BoardParentId = request.Board.ParentId
+			};
+
+			// Вызываем метод сервиса
+			var result = await projectService.ProcessWidgetInfoAsync(widgetInfo);
+
+			return Ok(result);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при обработке информации о виджете");
+			return StatusCode(500, new { Error = ex.Message });
+		}
+	}
+
 	[HttpPost("create")]
 	public async Task<ActionResult<Guid>> CreateProject([FromBody] CreateProjectRequest? request)
 	{

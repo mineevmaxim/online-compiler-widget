@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FileStorage;
@@ -9,6 +10,98 @@ public class ProjectService(
 	ILogger<ProjectService> logger)
 	: IProjectService
 {
+	public async Task<WidgetInfo?> GetWidgetInfoAsync(long widgetId)
+	{
+		try
+		{
+			return await context.WidgetInfos
+				.AsNoTracking()
+				.FirstOrDefaultAsync(w => w.WidgetId == widgetId);
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при получении информации о виджете {WidgetId}", widgetId);
+			return null;
+		}
+	}
+	
+	public async Task<bool> UpdateWidgetInfoAsync(WidgetInfo widgetInfo)
+	{
+		try
+		{
+			var existing = await context.WidgetInfos
+				.FirstOrDefaultAsync(w => w.WidgetId == widgetInfo.WidgetId);
+        
+			if (existing == null)
+				return false;
+        
+			// Обновляем все поля кроме WidgetId
+			existing.UserId = widgetInfo.UserId;
+			existing.Role = widgetInfo.Role;
+			existing.Config = widgetInfo.Config;
+			existing.BoardId = widgetInfo.BoardId;
+			existing.BoardName = widgetInfo.BoardName;
+			existing.BoardParentId = widgetInfo.BoardParentId;
+        
+			context.WidgetInfos.Update(existing);
+			await context.SaveChangesAsync();
+        
+			logger.LogInformation("Информация о виджете {WidgetId} обновлена", widgetInfo.WidgetId);
+			return true;
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при обновлении информации о виджете {WidgetId}", widgetInfo.WidgetId);
+			return false;
+		}
+	}
+	
+	public async Task<object> ProcessWidgetInfoAsync(WidgetInfo widgetInfo)
+	{
+		try
+		{
+			// 1. Создаем/получаем проект (widgetId = projectId)
+			await GetOrCreateProjectAsync(widgetInfo.WidgetId);
+                
+			// 2. Сохраняем информацию о виджете в БД
+			var existing = await context.WidgetInfos
+				.FirstOrDefaultAsync(w => w.WidgetId == widgetInfo.WidgetId);
+                
+			if (existing == null)
+			{
+				await context.WidgetInfos.AddAsync(widgetInfo);
+			}
+			else
+			{
+				// Обновляем существующую запись
+				context.Entry(existing).CurrentValues.SetValues(widgetInfo);
+			}
+                
+			await context.SaveChangesAsync();
+                
+			// 3. Возвращаем результат
+			return new 
+			{
+				WidgetId = widgetInfo.WidgetId,
+				UserId = widgetInfo.UserId,
+				Role = widgetInfo.Role,
+				Config = JsonDocument.Parse(widgetInfo.Config).RootElement,
+				Board = new 
+				{
+					Id = widgetInfo.BoardId,
+					Name = widgetInfo.BoardName,
+					ParentId = widgetInfo.BoardParentId
+				},
+				Message = "Данные виджета сохранены"
+			};
+		}
+		catch (Exception ex)
+		{
+			logger.LogError(ex, "Ошибка при обработке информации о виджете {WidgetId}", widgetInfo.WidgetId);
+			throw;
+		}
+	}
+	
 	public async Task<long> CreateProjectAsync(string? name = null)
 	{
 		try

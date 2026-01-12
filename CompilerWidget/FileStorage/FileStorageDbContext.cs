@@ -16,6 +16,7 @@ public class FileStorageDbContext : DbContext
 
 	public DbSet<ProjectFile> ProjectFiles { get; set; }
 	public DbSet<Project> Projects { get; set; }
+	public DbSet<WidgetInfo> WidgetInfos { get; set; }
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 	{
@@ -37,6 +38,14 @@ public class FileStorageDbContext : DbContext
 
 		builder.Entity<ProjectFile>()
 			.HasKey(m => m.FileId);
+		
+		builder.Entity<WidgetInfo>(entity =>
+		{
+			entity.HasKey(e => e.WidgetId); // Primary key
+			entity.Property(e => e.Config)
+				.HasColumnType("jsonb"); // Для PostgreSQL
+		});
+		
 
 		base.OnModelCreating(builder);
 	}
