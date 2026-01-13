@@ -24,8 +24,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DataAccessPostgreSqlProvider: "Host=postgres;Database=compiler;Username=postgres;Password=postgres"
+      ConnectionStrings__DataAccessPostgreSqlProvider: "Host=postgres;Database=compiler;Username=postgres;Password=postgres;"
       ASPNETCORE_URLS: http://+:80
     ports:
       - "5000:80"
