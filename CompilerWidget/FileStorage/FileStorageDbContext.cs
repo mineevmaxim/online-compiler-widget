@@ -18,16 +18,6 @@ public class FileStorageDbContext : DbContext
 	public DbSet<Project> Projects { get; set; }
 	public DbSet<WidgetInfo> WidgetInfos { get; set; }
 
-	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-	{
-		if (!optionsBuilder.IsConfigured)
-		{
-			optionsBuilder.UseNpgsql("Host=localhost;Database=compiler;Username=postgres;Password=postgres");
-			optionsBuilder.EnableSensitiveDataLogging();
-			optionsBuilder.LogTo(Console.WriteLine, LogLevel.Information);
-		}
-	}
-
 	protected override void OnModelCreating(ModelBuilder builder)
 	{
 		builder.Entity<Project>()
